@@ -132,9 +132,7 @@ Quaternion utils::math::randomRotation()
 	return QuaternionNormalize(q); // Just in case
 }
 
-Matrix utils::math::getTransformMatrix(const Vector3 &scale,
-                                       const Vector3 &rotation,
-                                       const Vector3 &displacement)
+Matrix utils::math::getTransformMatrix(const Vector3 &scale, const Vector3 &rotation, const Vector3 &displacement)
 {
 	Matrix scaleMatrix = MatrixScale(scale.x, scale.y, scale.z);
 	Matrix rotationMatrix = MatrixRotateXYZ(rotation);

@@ -8,13 +8,13 @@
 namespace sound {
 	using Id = int;
 	constexpr Id NONE = 0;
-} // namespace sound
 
-struct PlaySoundRequest {
-	sound::Id id = sound::NONE;
-	Vector3 position{0.0f, 0.0f, 0.0f};
-	float volume = 1.0f;
-};
+	struct PlaySoundRequest {
+		Id id = NONE;
+		Vector3 position{0.0f, 0.0f, 0.0f};
+		float volume = 1.0f;
+	};
+} // namespace sound
 
 class GameConfig;
 
@@ -48,7 +48,7 @@ public:
 private:
 	std::map<sound::Id, Sound> m_sounds;
 	std::map<std::string, sound::Id> m_pathCache;
-	std::vector<PlaySoundRequest> m_pendingRequests;
+	std::vector<sound::PlaySoundRequest> m_pendingRequests;
 
 	Music m_bgmStream{};
 	bool m_bgmLoaded = false;

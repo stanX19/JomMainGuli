@@ -1,6 +1,6 @@
 #pragma once
 
-#include "game_context.hpp"
+#include "GameContext.hpp"
 #include "Renderer.hpp"
 #include "TextButtonWidget.hpp"
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "includes.hpp"
-#include "game_context.hpp"
+#include "GameContext.hpp"
 #include "SoundManager.hpp"
 
 namespace event {

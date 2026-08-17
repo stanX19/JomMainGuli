@@ -1,0 +1,66 @@
+#pragma once
+
+#include "includes.hpp"
+#include "map/Map.hpp"
+#include "ModelManager.hpp"
+#include <vector>
+
+namespace map {
+	class MapMeshGenerator {
+	public:
+		explicit MapMeshGenerator(Map &map);
+		~MapMeshGenerator() = default;
+
+		Mesh generateMesh();
+		void generateAndAssignModel(ModelManager &modelManager);
+
+	private:
+		struct VertexData {
+			Vector3 pos;
+			Vector3 normal;
+			Color color;
+		};
+
+		struct Triangle {
+			VertexData v[3];
+		};
+
+		Map &m_map;
+		int m_width = 0;
+		int m_height = 0;
+		float m_tileSize = 2.0f;
+		float m_heightScale = 1.0f;
+		float m_halfWidth = 0.0f;
+		float m_halfHeight = 0.0f;
+		float m_baseBottom = -2.0f;
+
+		std::vector<Triangle> m_triangles;
+
+		void addTriangle(
+			Vector3 v0, Vector3 v1, Vector3 v2,
+			Vector3 normal,
+			Color color
+		);
+
+		void addRect(
+			Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3,
+			Vector3 normal,
+			Color color
+		);
+
+		void addTileTop(
+			float x0, float x1, float z0, float z1,
+			float yTop,
+			Color color
+		);
+
+		void addTileSides(
+			int x, int y,
+			float x0, float x1, float z0, float z1,
+			float yTop,
+			Color color
+		);
+
+		Mesh buildRaylibMesh() const;
+	};
+} // namespace map

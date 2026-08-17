@@ -3,6 +3,8 @@
 #include "entities.hpp"
 #include "events.hpp"
 #include "systems.hpp"
+#include "map/MapLoader.hpp"
+#include "map/MapMeshGenerator.hpp"
 
 Game::Game(GameContext &context) 
 	: m_context(context), 
@@ -14,13 +16,10 @@ Game::~Game() = default;
 void Game::reset() {
 	m_context.registry.clear();
 	event::utils::hookAllListeners(m_context);
-	entity::spawnPlayer(m_context);
 
-	m_context.mainCamera.position = Vector3{ 0.0f, 5.0f, 15.0f };
-	m_context.mainCamera.target = Vector3{ 0.0f, 0.0f, 0.0f };
-	m_context.mainCamera.up = Vector3{ 0.0f, 1.0f, 0.0f };
-	m_context.mainCamera.fovy = 45.0f;
-	m_context.mainCamera.projection = CAMERA_PERSPECTIVE;
+	m_context.map = map::MapLoader::load("assets/maps/level1.map");
+	map::MapMeshGenerator(m_context.map).generateAndAssignModel(m_context.modelManager);
+	m_context.map.spawnAll(m_context);
 }
 
 EngineState Game::run() {

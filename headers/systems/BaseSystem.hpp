@@ -1,7 +1,7 @@
 #pragma once
 
 #include "components.hpp"
-#include "game_context.hpp"
+#include "GameContext.hpp"
 
 namespace systems {
 	class BaseSystem {

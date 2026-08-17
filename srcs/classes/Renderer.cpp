@@ -74,12 +74,24 @@ void Renderer::render(float dt)
 	BeginMode3D(m_camera);
 	updateFrustum();
 
-	DrawGrid(40, 10.0f);
-
+	drawMap();
 	drawEntities();
 	drawTrails();
 
 	EndMode3D();
+}
+
+void Renderer::drawMap()
+{
+	const auto mapModelId = m_context.map.getModelId();
+	if (!mapModelId.has_value() || !m_context.modelManager.isValid(*mapModelId))
+		return;
+
+	Model &model = m_context.modelManager.getModel(*mapModelId);
+	for (int i = 0; i < model.materialCount; i++) {
+		model.materials[i].shader = (m_lightedShader.id != 0) ? m_lightedShader : m_defaultShader;
+	}
+	DrawModel(model, Vector3{0.0f, 0.0f, 0.0f}, 1.0f, WHITE);
 }
 
 void Renderer::drawTrails()
