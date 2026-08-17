@@ -1,0 +1,29 @@
+# Build Artifacts
+objs/
+*.o
+*.d
+*.gch
+*.a
+
+# Binaries & Executables
+codesfaires
+*.exe
+*.out
+a.out
+
+# Third-party upstream clones
+includes/*/repo/
+
+# IDE & Editor files
+.vscode/
+.idea/
+.cache/
+compile_commands.json
+.clangd/index/
+
+# OS Specific
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

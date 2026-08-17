@@ -1,0 +1,62 @@
+#pragma once
+
+#include "includes.hpp"
+#include "components.hpp"
+#include <optional>
+#include <string>
+
+namespace utils::math {
+	Quaternion rotateAroundAxis(const Quaternion &current, const Vector3 &axis, float angle);
+	Vector3 vector3Abs(const Vector3 &vec);
+	Vector3 getForwardVector(const component::Rotation &rotation);
+	Vector3 getForwardVector(const Quaternion &rotation);
+	Vector3 getRightVector(const component::Rotation &rotation);
+	Vector3 getRightVector(const Quaternion &rotation);
+	Vector3 getUpVector(const component::Rotation &rotation);
+	Vector3 getUpVector(const Quaternion &rotation);
+	Quaternion vector3ToRotation(const Vector3 &forward);
+	Quaternion vector3ToRotation(const Vector3 &forward, const Vector3 &up);
+	Quaternion vector3ToRotation(const Vector3 &newForward, const Quaternion &baseRotation);
+	Vector3 randomUnitVector3();
+	Quaternion randomRotation();
+	Matrix getTransformMatrix(const Vector3 &scale, const Vector3 &rotation, const Vector3 &displacement);
+
+	float angleDifference(const Vector3 &a, const Vector3 &b);
+	float angleDifference(const Quaternion &a, const Quaternion &b);
+	float angleDifference(const component::Rotation &a, const component::Rotation &b);
+	float angleDifference(const Quaternion &a, const component::Rotation &b);
+	float angleDifference(const component::Rotation &a, const Quaternion &b);
+
+	float wrapAngle(float angle);
+	float wrapAngleDegree(float angle);
+	float randomFloat(float min = -1.0f, float max = 1.0f);
+} // namespace utils::math
+
+namespace utils::color {
+	Color colorRevert(Color a);
+} // namespace utils::color
+
+namespace utils::collision {
+	struct CollisionInterval {
+		float collisionStartDt;
+		float collisionEndDt;
+	};
+
+	Vector3 calculateLeadDirection(const Vector3 &shooterPos, const Vector3 &targetPos, const Vector3 &targetVel, float projectileSpeed);
+	Vector3 calculateVelocityBiasedDirection(const Vector3 &chaserPos, const Vector3 &targetPos, const Vector3 &targetVel, float chaserSpeed);
+	std::optional<CollisionInterval> calculateCollisionInterval(const Vector3 &posA, const Vector3 &velA, const Vector3 &posB, const Vector3 &velB, float collisionDistance);
+	bool willCollide(const std::optional<CollisionInterval> &interval, float maxDt);
+	bool willCollide(float collisionDt, float maxDt);
+	bool willCollide(const Vector3 &posA, const Vector3 &velA, const Vector3 &posB, const Vector3 &velB, float collisionDistance, float maxDt);
+	float calculateCollisionTime(const Vector3 &posA, const Vector3 &velA, const Vector3 &posB, const Vector3 &velB, float collisionDistance);
+} // namespace utils::collision
+
+namespace utils::path {
+	std::string getParentDir(const std::string &path);
+	std::string getFileName(const std::string &path);
+} // namespace utils::path
+
+namespace utils::input {
+	Vector2 getMouseRatioRelCenter();
+	Vector2 getMouseDirectionNormalized(float clampRatio = 1.0f);
+} // namespace utils::input

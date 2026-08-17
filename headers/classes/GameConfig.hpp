@@ -1,0 +1,93 @@
+#pragma once
+
+#include <initializer_list>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "json.hpp"
+#include "raylib.h"
+
+class SubGameConfig;
+
+class GameConfig {
+public:
+	using RootSource = std::pair<std::string, std::string>;
+
+	struct Physics {
+		float collisionElasticity = 0.5f;
+		float maxAngularKick = 0.5f;
+		float roughness = 2.5f;
+	};
+
+	struct Settings {
+		float masterVolume = 0.5f;
+		float controlSensitivity = 1.0f;
+	};
+
+	struct Debug {
+		bool showTarget = false;
+	};
+
+	GameConfig() = default;
+	virtual ~GameConfig() = default;
+
+	void init(const std::vector<RootSource>& sources);
+	void init(std::initializer_list<RootSource> sources);
+	void initConstants();
+	bool isLoaded() const { return m_loaded; }
+
+	virtual float getFloat(const std::string& path, float defaultVal) const;
+	virtual int getInt(const std::string& path, int defaultVal) const;
+	virtual bool getBool(const std::string& path, bool defaultVal) const;
+	virtual std::string getString(
+		const std::string& path,
+		const std::string& defaultVal
+	) const;
+	virtual std::vector<std::string> getStringArray(
+		const std::string& path,
+		const std::vector<std::string>& defaultVal
+	) const;
+	virtual Vector3 getVector3(const std::string& path, Vector3 defaultVal) const;
+
+	void setFloat(const std::string& path, float value);
+	void setBool(const std::string& path, bool value);
+	void setString(const std::string& path, const std::string& value);
+	void setStringArray(
+		const std::string& path,
+		const std::vector<std::string>& value
+	);
+
+	void saveRoot(const std::string& rootName);
+	void saveChanged();
+	void saveAll();
+
+	const nlohmann::json& getJson() const { return m_config; }
+	nlohmann::json getSection(const std::string& path) const;
+	SubGameConfig getSubConfig(const std::string& path) const;
+
+	float ARENA_SIZE = 2000.0f;
+	Physics physics{};
+	Settings settings{};
+	Debug debug{};
+
+private:
+	struct RootJsonFile {
+		std::string sourcePath;
+		bool dirty = false;
+	};
+
+	nlohmann::json m_config;
+	std::map<std::string, RootJsonFile> m_roots;
+	bool m_loaded = false;
+
+	const nlohmann::json* navigatePath(const std::string& path) const;
+	nlohmann::json* navigatePath(
+		nlohmann::json& root,
+		const std::string& path
+	) const;
+	void setJsonValue(const std::string& path, nlohmann::json value);
+	void saveRootJsonFile(const std::string& rootName, RootJsonFile& file);
+};

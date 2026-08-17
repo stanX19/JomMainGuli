@@ -1,0 +1,145 @@
+#include "utils.hpp"
+#include <cmath>
+#include <iostream>
+
+Vector3 utils::math::vector3Abs(const Vector3 &vec)
+{
+	return Vector3{std::abs(vec.x), std::abs(vec.y), std::abs(vec.z)};
+}
+
+Vector3 utils::math::getForwardVector(const component::Rotation &rotation)
+{
+	return Vector3Transform({0, 0, 1}, QuaternionToMatrix(rotation.value));
+}
+
+Vector3 utils::math::getUpVector(const component::Rotation &rotation)
+{
+	return Vector3Transform({0, 1, 0}, QuaternionToMatrix(rotation.value));
+}
+
+Vector3 utils::math::getRightVector(const component::Rotation &rotation)
+{
+	return Vector3Transform({1, 0, 0}, QuaternionToMatrix(rotation.value));
+}
+
+Vector3 utils::math::getForwardVector(const Quaternion &rotation)
+{
+	return Vector3Transform({0, 0, 1}, QuaternionToMatrix(rotation));
+}
+
+Vector3 utils::math::getUpVector(const Quaternion &rotation)
+{
+	return Vector3Transform({0, 1, 0}, QuaternionToMatrix(rotation));
+}
+
+Vector3 utils::math::getRightVector(const Quaternion &rotation)
+{
+	return Vector3Transform({1, 0, 0}, QuaternionToMatrix(rotation));
+}
+
+Quaternion utils::math::rotateAroundAxis(const Quaternion &current, const Vector3 &axis, float angle)
+{
+	Quaternion q = QuaternionFromAxisAngle(Vector3Normalize(axis), angle);
+	return QuaternionNormalize(QuaternionMultiply(q, current));
+}
+
+Quaternion utils::math::vector3ToRotation(const Vector3 &vec)
+{
+	Vector3 dir = Vector3Normalize(vec);
+	float yaw = atan2f(dir.x, dir.z);
+	float pitch = -asinf(dir.y);
+	return QuaternionFromEuler(pitch, yaw, 0);
+}
+
+Quaternion utils::math::vector3ToRotation(const Vector3 &vec, const Vector3 &up)
+{
+	Vector3 dir = Vector3Normalize(vec);
+	Vector3 right = Vector3Normalize(Vector3CrossProduct(up, dir));
+	Vector3 correctedUp = Vector3CrossProduct(dir, right);
+
+	Matrix mat = {
+		right.x, right.y, right.z, 0.0f,
+		correctedUp.x, correctedUp.y, correctedUp.z, 0.0f,
+		dir.x, dir.y, dir.z, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f};
+
+	return QuaternionFromMatrix(mat);
+}
+
+Quaternion utils::math::vector3ToRotation(const Vector3 &newForward, const Quaternion &baseRotation)
+{
+	Vector3 forward = Vector3Normalize(newForward);
+	Vector3 oldForward = getForwardVector(baseRotation);
+
+	Quaternion deltaRot = QuaternionFromVector3ToVector3(oldForward, forward);
+	return QuaternionMultiply(deltaRot, baseRotation);
+}
+
+// in degrees [0, 180]
+float utils::math::angleDifference(const Vector3 &a, const Vector3 &b)
+{
+	float dot = Vector3DotProduct(a, b);
+	dot = Clamp(fabsf(dot), 0.0f, 1.0f);
+	return RAD2DEG * acosf(dot);
+}
+
+// in degrees [0, 180]
+float utils::math::angleDifference(const Quaternion &a, const Quaternion &b)
+{
+	float dot = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+	dot = Clamp(dot, -1.0f, 1.0f);
+	float angleRad = 2.0f * acosf(fabsf(dot));
+	return RAD2DEG * angleRad;
+}
+
+float utils::math::angleDifference(const component::Rotation &a, const component::Rotation &b)
+{
+	return angleDifference(a.value, b.value);
+}
+
+float utils::math::angleDifference(const Quaternion &a, const component::Rotation &b)
+{
+	return angleDifference(a, b.value);
+}
+
+float utils::math::angleDifference(const component::Rotation &a, const Quaternion &b)
+{
+	return angleDifference(a.value, b);
+}
+
+Vector3 utils::math::randomUnitVector3()
+{
+	Vector3 v{randomFloat(), randomFloat(), randomFloat()};
+	return Vector3Normalize(v);
+}
+
+// unit quaternion, uniform
+Quaternion utils::math::randomRotation()
+{
+	float u1 = randomFloat(0.0f, 1.0f);
+	float u2 = randomFloat(0.0f, 2.0f * PI);
+	float u3 = randomFloat(0.0f, 2.0f * PI);
+
+	float sqrt1 = sqrtf(1.0f - u1);
+	float sqrt2 = sqrtf(u1);
+
+	Quaternion q;
+	q.x = sqrt1 * sinf(u2);
+	q.y = sqrt1 * cosf(u2);
+	q.z = sqrt2 * sinf(u3);
+	q.w = sqrt2 * cosf(u3);
+
+	return QuaternionNormalize(q); // Just in case
+}
+
+Matrix utils::math::getTransformMatrix(const Vector3 &scale,
+                                       const Vector3 &rotation,
+                                       const Vector3 &displacement)
+{
+	Matrix scaleMatrix = MatrixScale(scale.x, scale.y, scale.z);
+	Matrix rotationMatrix = MatrixRotateXYZ(rotation);
+	Matrix translationMatrix = MatrixTranslate(displacement.x, displacement.y, displacement.z);
+
+	// Apply transformations in order: Scale -> Rotate -> Translate
+	return MatrixMultiply(MatrixMultiply(scaleMatrix, rotationMatrix), translationMatrix);
+}
