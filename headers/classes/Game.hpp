@@ -20,6 +20,7 @@ private:
 
 	systems::PlayerMoveControl m_playerMoveControl;
 	systems::EntityMovement m_entityMovement;
+	systems::EntityWorldCollision m_entityWorldCollision;
 	systems::DetectEntityCollision m_detectEntityCollision;
 	systems::CameraFollowPlayer m_cameraFollowPlayer;
 	systems::SpawnTrailParticles m_spawnTrailParticles;

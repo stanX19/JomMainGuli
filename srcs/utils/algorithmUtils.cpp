@@ -1,3 +1,4 @@
+#include "constants.hpp"
 #include "utils.hpp"
 #include "includes.hpp"
 #include <algorithm>
@@ -17,7 +18,7 @@ std::optional<utils::collision::CollisionInterval> utils::collision::calculateCo
 
 	if (discriminant < 0.0f || a == 0.0f) {
 		// overlapping or no collision
-		if (c > 0.0001f)
+		if (c > constants::epsilon)
 			return std::nullopt;
 		return utils::collision::CollisionInterval{0.0f, std::numeric_limits<float>::infinity()};
 	}

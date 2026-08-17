@@ -29,19 +29,14 @@ namespace map {
 	private:
 		static constexpr CharColorDef COLOR_DEFS[] = {
 			{'R', ColorType::Red},
-			{'r', ColorType::Red},
 			{'G', ColorType::Green},
-			{'g', ColorType::Green},
 			{'B', ColorType::Blue},
-			{'b', ColorType::Blue},
 			{'Y', ColorType::Yellow},
-			{'y', ColorType::Yellow},
 			{'P', ColorType::Purple},
-			{'p', ColorType::Purple},
 			{'O', ColorType::Orange},
-			{'o', ColorType::Orange},
 			{'W', ColorType::White},
-			{'w', ColorType::White},
+			{' ', ColorType::None},
+			{'#', ColorType::None}
 		};
 
 		static constexpr CharEntityDef ENTITY_DEFS[] = {
@@ -51,6 +46,8 @@ namespace map {
 			{'M', EntityType::Flag},
 		};
 
+		static bool isValidMapChar(char c);
+		static bool isValidColorChar(char c);
 		static ColorType parseColorChar(char c);
 		static std::optional<EntityType> parseEntityChar(char c);
 		static int parseExplicitHeight(char c);
@@ -70,14 +67,14 @@ namespace map {
 		static std::vector<InitialEntity> extractInitialEntities(
 			const std::vector<std::string> &mapLines,
 			const std::vector<std::string> &colorLines,
-			Vector2 &outFlagCords
+			CellCord &outFlagCords
 		);
 		static void populateMap(
 			Map &map,
 			const std::vector<std::vector<int>> &heightGrid,
 			const std::vector<std::string> &colorLines,
 			const std::vector<InitialEntity> &entities,
-			Vector2 flagCords
+			CellCord flagCords
 		);
 	};
 } // namespace map

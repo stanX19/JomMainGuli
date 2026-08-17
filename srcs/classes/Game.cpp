@@ -32,6 +32,7 @@ EngineState Game::run() {
 
 		m_playerMoveControl.update(m_context, dt);
 		m_entityMovement.update(m_context, dt);
+		m_entityWorldCollision.update(m_context, dt);
 		m_detectEntityCollision.update(m_context, dt);
 		m_context.dispatcher.update();
 		m_context.soundManager.update(m_context.mainCamera);
@@ -48,7 +49,7 @@ EngineState Game::run() {
 		inputControls(dt, nextState);
 	}
 
-	m_context.soundManager.stopMusic();   
+	m_context.soundManager.stopMusic();
 	return nextState;
 }
 

@@ -1,4 +1,5 @@
 #include "map/MapLoader.hpp"
+#include "utils/utils.hpp"
 #include <fstream>
 #include <iostream>
 #include <algorithm>
@@ -31,6 +32,22 @@ std::string map::MapLoader::deriveColorPath(const std::string &mapPath) {
 		return mapPath + ".color";
 	}
 	return mapPath.substr(0, dotPos) + ".color";
+}
+
+bool map::MapLoader::isValidMapChar(char c) {
+	if (parseEntityChar(c).has_value()) {
+		return true;
+	}
+	return c == '#' || c == ' ' || (c >= '0' && c <= '9');
+}
+
+bool map::MapLoader::isValidColorChar(char c) {
+	for (const auto &def : COLOR_DEFS) {
+		if (def.symbol == c) {
+			return true;
+		}
+	}
+	return false;
 }
 
 map::ColorType map::MapLoader::parseColorChar(char c) {
@@ -109,29 +126,44 @@ void map::MapLoader::validate(
 		}
 	}
 
-	bool hasPlayer = false;
-	bool hasFlag = false;
+	if (colorLines.empty()) {
+		throw std::runtime_error("MapLoader validation failed: Color file is empty");
+	}
 
-	for (const auto &line : mapLines) {
-		for (const char c : line) {
-			const auto entityOpt = parseEntityChar(c);
-			if (!entityOpt.has_value())
-				continue;
+	if (colorLines.size() != mapLines.size()) {
+		throw std::runtime_error(
+			"MapLoader validation failed: Color row count (" +
+			std::to_string(colorLines.size()) + ") does not match map row count (" +
+			std::to_string(mapLines.size()) + ")"
+		);
+	}
 
-			if (*entityOpt == EntityType::Player) {
-				hasPlayer = true;
-			} else if (*entityOpt == EntityType::Flag) {
-				hasFlag = true;
-			}
+	for (std::size_t i = 0; i < colorLines.size(); ++i) {
+		if (colorLines[i].size() != width) {
+			throw std::runtime_error(
+				"MapLoader validation failed: Color row " + std::to_string(i) +
+				" size " + std::to_string(colorLines[i].size()) +
+				" != expected " + std::to_string(width) + ")"
+			);
 		}
 	}
 
-	if (!hasPlayer) {
-		throw std::runtime_error("MapLoader validation failed: Map is missing player ('P')");
+	if (!utils::grid::allOf(mapLines, isValidMapChar)) {
+		throw std::runtime_error("MapLoader validation failed: Map contains invalid characters");
 	}
 
-	if (!hasFlag) {
-		throw std::runtime_error("MapLoader validation failed: Map is missing flag ('M')");
+	if (!utils::grid::allOf(colorLines, isValidColorChar)) {
+		throw std::runtime_error("MapLoader validation failed: Color file contains invalid characters");
+	}
+
+	const int playerCount = utils::grid::countIf(mapLines, [](char c) { return c == 'P'; });
+	if (playerCount != 1) {
+		throw std::runtime_error("MapLoader validation failed: Map must have exactly 1 player ('P')");
+	}
+
+	const int flagCount = utils::grid::countIf(mapLines, [](char c) { return c == 'M'; });
+	if (flagCount != 1) {
+		throw std::runtime_error("MapLoader validation failed: Map must have exactly 1 flag ('M')");
 	}
 
 	std::set<ColorType> foundColors;
@@ -196,7 +228,7 @@ std::vector<std::vector<int>> map::MapLoader::buildHeightGrid(
 std::vector<map::InitialEntity> map::MapLoader::extractInitialEntities(
 	const std::vector<std::string> &mapLines,
 	const std::vector<std::string> &colorLines,
-	Vector2 &outFlagCords
+	CellCord &outFlagCords
 ) {
 	const int width = static_cast<int>(mapLines[0].size());
 	const int height = static_cast<int>(mapLines.size());
@@ -218,7 +250,7 @@ std::vector<map::InitialEntity> map::MapLoader::extractInitialEntities(
 			const ColorType colorType = parseColorChar(cChar);
 
 			InitialEntity entity{};
-			entity.cellCords = Vector2{static_cast<float>(x), static_cast<float>(y)};
+			entity.cellCords = CellCord{x, y};
 			entity.type = *entityOpt;
 			entity.color = colorType;
 			entities.push_back(entity);
@@ -237,12 +269,12 @@ void map::MapLoader::populateMap(
 	const std::vector<std::vector<int>> &heightGrid,
 	const std::vector<std::string> &colorLines,
 	const std::vector<InitialEntity> &entities,
-	Vector2 flagCords
+	CellCord flagCords
 ) {
 	const int height = static_cast<int>(heightGrid.size());
 	const int width = height > 0 ? static_cast<int>(heightGrid[0].size()) : 0;
 
-	map.init(width, height);
+	map.init(width, height, 100.0f, 100.0f);
 	map.setFlagCords(flagCords);
 
 	for (int y = 0; y < height; ++y) {
@@ -260,6 +292,8 @@ void map::MapLoader::populateMap(
 		}
 	}
 
+	map.populateTileBounds();
+
 	for (const auto &entity : entities) {
 		map.addInitialEntity(entity);
 	}
@@ -276,7 +310,7 @@ map::Map map::MapLoader::load(const std::string &mapPath) {
 
 	validate(mapLines, colorLines);
 
-	Vector2 flagCords = {0.0f, 0.0f};
+	CellCord flagCords = {0, 0};
 	const auto heightGrid = buildHeightGrid(mapLines);
 	const auto entities = extractInitialEntities(mapLines, colorLines, flagCords);
 

@@ -1,4 +1,5 @@
 #include "Renderer.hpp"
+#include "constants.hpp"
 #include "rlgl.h"
 #include <algorithm>
 #include <iostream>
@@ -110,7 +111,7 @@ void Renderer::drawTrailBetween(const Vector3 &head, const Vector3 &tail, float 
 {
 	const Vector3 dir = head - tail;
 	const float len = Vector3Length(dir);
-	if (len < 0.001f)
+	if (len < constants::epsilon)
 		return;
 
 	DrawCylinderEx(tail, head, rad, rad * 0.5f, 8, color);

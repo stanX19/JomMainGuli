@@ -17,6 +17,7 @@ entt::entity entity::spawnPlayer(GameContext &context, Vector3 pos) {
 	context.registry.emplace<Rotation>(player, Rotation{QuaternionIdentity()});
 	context.registry.emplace<PrevRotation>(player, PrevRotation{QuaternionIdentity()});
 	context.registry.emplace<Mass>(player, Mass{10.0f});
+	context.registry.emplace<VerticalGravity>(player, VerticalGravity{1.0f});
 
 	const ModelId sphereModelId = context.modelManager.createSphere(16, 16, 1.0f);
 	context.registry.emplace<RenderBody>(player, RenderBody{sphereModelId, SKYBLUE, 2.0f});

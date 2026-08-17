@@ -1,4 +1,4 @@
-#include "utils.hpp"
+#include "mathUtils.hpp"
 #include <cmath>
 #include <iostream>
 
@@ -7,34 +7,49 @@ Vector3 utils::math::vector3Abs(const Vector3 &vec)
 	return Vector3{std::abs(vec.x), std::abs(vec.y), std::abs(vec.z)};
 }
 
+Vector3 utils::math::getForwardVector()
+{
+	return Vector3{0.0f, 0.0f, 1.0f};
+}
+
+Vector3 utils::math::getUpVector()
+{
+	return Vector3{0.0f, 1.0f, 0.0f};
+}
+
+Vector3 utils::math::getRightVector()
+{
+	return Vector3{-1.0f, 0.0f, 0.0f};
+}
+
 Vector3 utils::math::getForwardVector(const component::Rotation &rotation)
 {
-	return Vector3Transform({0, 0, 1}, QuaternionToMatrix(rotation.value));
+	return Vector3Transform(getForwardVector(), QuaternionToMatrix(rotation.value));
 }
 
 Vector3 utils::math::getUpVector(const component::Rotation &rotation)
 {
-	return Vector3Transform({0, 1, 0}, QuaternionToMatrix(rotation.value));
+	return Vector3Transform(getUpVector(), QuaternionToMatrix(rotation.value));
 }
 
 Vector3 utils::math::getRightVector(const component::Rotation &rotation)
 {
-	return Vector3Transform({1, 0, 0}, QuaternionToMatrix(rotation.value));
+	return Vector3Transform(getRightVector(), QuaternionToMatrix(rotation.value));
 }
 
 Vector3 utils::math::getForwardVector(const Quaternion &rotation)
 {
-	return Vector3Transform({0, 0, 1}, QuaternionToMatrix(rotation));
+	return Vector3Transform(getForwardVector(), QuaternionToMatrix(rotation));
 }
 
 Vector3 utils::math::getUpVector(const Quaternion &rotation)
 {
-	return Vector3Transform({0, 1, 0}, QuaternionToMatrix(rotation));
+	return Vector3Transform(getUpVector(), QuaternionToMatrix(rotation));
 }
 
 Vector3 utils::math::getRightVector(const Quaternion &rotation)
 {
-	return Vector3Transform({1, 0, 0}, QuaternionToMatrix(rotation));
+	return Vector3Transform(getRightVector(), QuaternionToMatrix(rotation));
 }
 
 Quaternion utils::math::rotateAroundAxis(const Quaternion &current, const Vector3 &axis, float angle)

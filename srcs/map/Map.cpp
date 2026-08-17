@@ -1,3 +1,4 @@
+#include "constants.hpp"
 #include "map/Map.hpp"
 #include "GameContext.hpp"
 #include "entities.hpp"
@@ -21,7 +22,7 @@ Color map::Map::toRaylibColor(ColorType type) {
 			return WHITE;
 		case ColorType::None:
 		default:
-			return LIGHTGRAY;
+			return GRAY;
 	}
 }
 
@@ -34,7 +35,7 @@ void map::Map::init(int width, int height, float tileSize, float heightScale) {
 	m_heightScale = heightScale;
 	m_grid.assign(height, std::vector<TileData>(width, TileData{}));
 	m_initialEntities.clear();
-	m_flagCords = Vector2{0.0f, 0.0f};
+	m_flagCords = CellCord{0, 0};
 	m_modelId = std::nullopt;
 }
 
@@ -53,14 +54,21 @@ const map::TileData& map::Map::getTile(int x, int y) const {
 	return m_grid[y][x];
 }
 
+const map::TileData& map::Map::getTile(CellCord cord) const {
+	return getTile(cord.x, cord.y);
+}
+
 bool map::Map::isValidGrid(int x, int y) const {
 	return x >= 0 && x < m_width && y >= 0 && y < m_height;
 }
 
-const map::TileData& map::Map::getGridData(Vector3 worldCords) const {
-	static const TileData defaultTile{};
-	if (m_width <= 0 || m_height <= 0 || m_tileSize <= 0.0001f)
-		return defaultTile;
+bool map::Map::isValidGrid(CellCord cord) const {
+	return isValidGrid(cord.x, cord.y);
+}
+
+map::CellCord map::Map::worldToGrid(Vector3 worldCords) const {
+	if (m_width <= 0 || m_height <= 0 || m_tileSize <= constants::epsilon)
+		throw std::runtime_error("Map not initialized");
 
 	const float halfWidth = (m_width * m_tileSize) * 0.5f;
 	const float halfHeight = (m_height * m_tileSize) * 0.5f;
@@ -68,10 +76,12 @@ const map::TileData& map::Map::getGridData(Vector3 worldCords) const {
 	const int x = static_cast<int>(std::floor((worldCords.x + halfWidth) / m_tileSize));
 	const int y = static_cast<int>(std::floor((worldCords.z + halfHeight) / m_tileSize));
 
-	if (!isValidGrid(x, y))
-		return defaultTile;
+	return CellCord{x, y};
+}
 
-	return m_grid[y][x];
+const map::TileData& map::Map::getGridData(Vector3 worldCords) const {
+	const CellCord cord = worldToGrid(worldCords);
+	return getTile(cord);
 }
 
 Vector3 map::Map::gridToWorld(int x, int y) const {
@@ -85,8 +95,33 @@ Vector3 map::Map::gridToWorld(int x, int y) const {
 	return Vector3{worldX, worldY, worldZ};
 }
 
-Vector3 map::Map::gridToWorld(Vector2 cellCords) const {
-	return gridToWorld(static_cast<int>(cellCords.x), static_cast<int>(cellCords.y));
+Vector3 map::Map::gridToWorld(CellCord cellCords) const {
+	return gridToWorld(cellCords.x, cellCords.y);
+}
+
+void map::Map::populateTileBounds() {
+	if (m_width <= 0 || m_height <= 0)
+		return;
+
+	const float halfWidth = (m_width * m_tileSize) * 0.5f;
+	const float halfHeight = (m_height * m_tileSize) * 0.5f;
+	const float baseBottom = -2.0f * m_heightScale;
+
+	for (int y = 0; y < m_height; ++y) {
+		for (int x = 0; x < m_width; ++x) {
+			TileData &tile = m_grid[y][x];
+			tile.x1 = x * m_tileSize - halfWidth;
+			tile.x2 = (x + 1) * m_tileSize - halfWidth;
+			tile.z1 = y * m_tileSize - halfHeight;
+			tile.z2 = (y + 1) * m_tileSize - halfHeight;
+
+			tile.selfHeight = tile.height * m_heightScale;
+			tile.upHeight = (y > 0) ? (m_grid[y - 1][x].height * m_heightScale) : baseBottom;
+			tile.downHeight = (y + 1 < m_height) ? (m_grid[y + 1][x].height * m_heightScale) : baseBottom;
+			tile.leftHeight = (x > 0) ? (m_grid[y][x - 1].height * m_heightScale) : baseBottom;
+			tile.rightHeight = (x + 1 < m_width) ? (m_grid[y][x + 1].height * m_heightScale) : baseBottom;
+		}
+	}
 }
 
 void map::Map::addInitialEntity(const InitialEntity &entity) {
@@ -98,9 +133,7 @@ void map::Map::spawnAll(GameContext &context) const {
 	bool playerSpawned = false;
 
 	for (const auto &entity : m_initialEntities) {
-		const int x = static_cast<int>(entity.cellCords.x);
-		const int y = static_cast<int>(entity.cellCords.y);
-		const Vector3 worldPos = gridToWorld(x, y) + Vector3{0.0f, 1.0f, 0.0f};
+		const Vector3 worldPos = gridToWorld(entity.cellCords) + Vector3{0.0f, 1.0f, 0.0f};
 		const Color entityColor = toRaylibColor(entity.color);
 
 		if (entity.type == EntityType::Player) {
@@ -128,6 +161,6 @@ void map::Map::clear() {
 	m_height = 0;
 	m_grid.clear();
 	m_initialEntities.clear();
-	m_flagCords = Vector2{0.0f, 0.0f};
+	m_flagCords = CellCord{0, 0};
 	m_modelId = std::nullopt;
 }

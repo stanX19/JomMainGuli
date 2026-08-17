@@ -7,4 +7,5 @@
 #include "systems/DetectEntityCollision.hpp"
 #include "systems/EntityTransformation.hpp"
 #include "systems/EntityLifetime.hpp"
+#include "systems/EntityWorldCollision.hpp"
 #include "systems/SpawnTrailParticles.hpp"

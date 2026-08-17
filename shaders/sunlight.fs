@@ -4,6 +4,7 @@ in vec3 fragPosition;
 in vec2 fragTexCoord;
 in vec3 fragNormal;
 in vec3 fragLightDir;
+in vec4 fragColor;
 
 out vec4 finalColor;
 
@@ -38,7 +39,7 @@ void main() {
 
 	vec4 texelColor = texture(texture0, fragTexCoord);
 
-	vec4 baseColor = texelColor * colDiffuse;
+	vec4 baseColor = texelColor * colDiffuse * fragColor;
 
 	float diff = max(dot(norm, lightDir), 0.0);  // how much direct light
 	vec3 diffuse = diff * lightColor;

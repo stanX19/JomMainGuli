@@ -22,13 +22,29 @@ namespace map {
 		Flag
 	};
 
+	struct CellCord {
+		int x = 0;
+		int y = 0;
+	};
+
 	struct TileData {
 		int height = 0;
 		ColorType color = ColorType::None;
+
+		float x1 = 0.0f;
+		float z1 = 0.0f;
+		float x2 = 0.0f;
+		float z2 = 0.0f;
+
+		float selfHeight = 0.0f;
+		float upHeight = 0.0f;
+		float downHeight = 0.0f;
+		float leftHeight = 0.0f;
+		float rightHeight = 0.0f;
 	};
 
 	struct InitialEntity {
-		Vector2 cellCords = {0.0f, 0.0f};
+		CellCord cellCords = {0, 0};
 		EntityType type = EntityType::Slime;
 		ColorType color = ColorType::None;
 	};

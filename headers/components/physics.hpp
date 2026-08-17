@@ -34,4 +34,11 @@ namespace component {
 	struct Mass {
 		float value = 1.0f;
 	};
+
+	// -1.0f -100% gravity
+	//  0.0f no gravity
+	//  1.0f 100% gravity
+	struct VerticalGravity {
+		float value;
+	};
 } // namespace component
