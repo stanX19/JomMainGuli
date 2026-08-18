@@ -64,7 +64,7 @@ public:
 
 	struct Map {
 		float tileSize = 50.0f;
-		float heightScale = 50.0f;
+		float tileUnitHeight = 20.0f;
 	} map;
 
 	struct Settings {

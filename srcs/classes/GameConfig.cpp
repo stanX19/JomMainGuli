@@ -84,7 +84,7 @@ void GameConfig::initConstants() {
 	physics.gravity = getFloat("physics.gravity", 120.0f);
 
 	map.tileSize = getFloat("map.tileSize", 50.0f);
-	map.heightScale = getFloat("map.heightScale", 50.0f);
+	map.tileUnitHeight = getFloat("map.tileUnitHeight", 50.0f);
 
 	settings.masterVolume = getFloat("audio.masterVolume", 0.5f);
 	settings.controlSensitivity = Clamp(
