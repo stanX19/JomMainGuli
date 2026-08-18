@@ -165,7 +165,7 @@ Mesh map::MapMeshGenerator::generateMesh() {
 	for (int y = 0; y < m_height; ++y) {
 		for (int x = 0; x < m_width; ++x) {
 			const TileData &tile = m_map.getTile(x, y);
-			const Color tileColor = ColorLerp(GRAY, Map::toRaylibColor(tile.color), 0.25);
+			const Color tileColor = ColorLerp(GRAY, Map::getRaylibColor(tile.color), 0.25);
 
 			const float x0 = x * m_tileSize - m_halfWidth;
 			const float x1 = (x + 1) * m_tileSize - m_halfWidth;

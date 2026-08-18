@@ -18,7 +18,7 @@ namespace map {
 		Map();
 		~Map() = default;
 
-		static Color toRaylibColor(ColorType type);
+		static Color getRaylibColor(ColorType type);
 
 		const TileData& getGridData(Vector3 worldCords) const;
 		const TileData& getTile(int x, int y) const;

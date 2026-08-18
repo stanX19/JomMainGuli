@@ -19,6 +19,7 @@ private:
 	Renderer m_renderer;
 
 	systems::PlayerMoveControl m_playerMoveControl;
+	systems::PlayerMagicCast m_playerMagicCast;
 	systems::EntityMovement m_entityMovement;
 	systems::EntityWorldCollision m_entityWorldCollision;
 	systems::DetectEntityCollision m_detectEntityCollision;

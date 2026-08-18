@@ -4,7 +4,7 @@
 #include "entities.hpp"
 #include <cmath>
 
-Color map::Map::toRaylibColor(ColorType type) {
+Color map::Map::getRaylibColor(ColorType type) {
 	switch (type) {
 		case ColorType::Red:
 			return RED;
@@ -134,7 +134,7 @@ void map::Map::spawnAll(GameContext &context) const {
 
 	for (const auto &entity : m_initialEntities) {
 		const Vector3 worldPos = gridToWorld(entity.cellCords) + Vector3{0.0f, 1.0f, 0.0f};
-		const Color entityColor = toRaylibColor(entity.color);
+		const Color entityColor = getRaylibColor(entity.color);
 
 		if (entity.type == EntityType::Player) {
 			entity::spawnPlayer(context, worldPos);

@@ -11,7 +11,7 @@ void systems::EntityWorldCollision::update(GameContext &context, [[maybe_unused]
 	const float elasticity = context.config.physics.collisionElasticity;
 
 	for (auto [entity, pos, vel, body] : context.registry.view<Position, Velocity, CollisionBody>().each()) {
-		std::optional<Vector3> normal = map::MapCollider::resolveSphere(map, pos.value, body.radius);
+		std::optional<Vector3> normal = map::MapCollider::calculateSphereCollisionNormals(map, pos.value, body.radius);
 		if (!normal.has_value())
 			continue;
 

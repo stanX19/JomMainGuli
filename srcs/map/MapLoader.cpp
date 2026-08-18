@@ -274,7 +274,7 @@ void map::MapLoader::populateMap(
 	const int height = static_cast<int>(heightGrid.size());
 	const int width = height > 0 ? static_cast<int>(heightGrid[0].size()) : 0;
 
-	map.init(width, height, 100.0f, 100.0f);
+	map.init(width, height, 50.0f, 50.0f);
 	map.setFlagCords(flagCords);
 
 	for (int y = 0; y < height; ++y) {

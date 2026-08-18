@@ -2,6 +2,8 @@
 
 #include "includes.hpp"
 #include <cstdint>
+#include <cstddef>
+#include <functional>
 
 namespace map {
 	enum class ColorType : uint8_t {
@@ -41,6 +43,10 @@ namespace map {
 		float downHeight = 0.0f;
 		float leftHeight = 0.0f;
 		float rightHeight = 0.0f;
+
+		bool operator==(const TileData &other) const {
+			return (x1 == other.x1 && z1 == other.z1);
+		}
 	};
 
 	struct InitialEntity {
@@ -48,4 +54,10 @@ namespace map {
 		EntityType type = EntityType::Slime;
 		ColorType color = ColorType::None;
 	};
+
+	struct TileCollisionData {
+		TileData tile;
+		Vector3 contactPoint;
+	};
 } // namespace map
+

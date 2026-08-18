@@ -1,15 +1,17 @@
 #include "constants.hpp"
+#include "utils.hpp"
 #include "map/MapCollider.hpp"
 #include <algorithm>
 #include <cmath>
 
-std::optional<Vector3> map::MapCollider::resolveSphere(
+std::vector<map::TileCollisionData> map::MapCollider::collideTilesInRange(
 	const Map &map,
 	Vector3 &pos,
 	float radius
 ) {
+	std::vector<map::TileCollisionData> result;
 	if (map.getWidth() <= 0 || map.getHeight() <= 0 || radius <= 0.0f)
-		return std::nullopt;
+		return result;
 
 	const CellCord minCord = map.worldToGrid(Vector3{pos.x - radius, 0.0f, pos.z - radius});
 	const CellCord maxCord = map.worldToGrid(Vector3{pos.x + radius, 0.0f, pos.z + radius});
@@ -19,12 +21,6 @@ std::optional<Vector3> map::MapCollider::resolveSphere(
 	const int startY = std::max(0, minCord.y);
 	const int endY = std::min(map.getHeight() - 1, maxCord.y);
 
-	bool collided = false;
-	Vector3 totalNormal = {0.0f, 0.0f, 0.0f};
-
-	// for each candidate cell, find the closest point within cell's box to the sphere's center.
-	// if closest dist < rad, collided
-	// can accumulate
 	for (int y = startY; y <= endY; ++y) {
 		for (int x = startX; x <= endX; ++x) {
 			const TileData &tile = map.getTile(x, y);
@@ -38,23 +34,39 @@ std::optional<Vector3> map::MapCollider::resolveSphere(
 			const float distSq = Vector3LengthSqr(pointToSphere);
 
 			if (distSq < radius * radius) {
-				collided = true;
-				const float dist = std::sqrt(distSq);
-				const Vector3 normal = (dist > constants::epsilon) ? (pointToSphere / dist) : Vector3{0.0f, 1.0f, 0.0f};
-				const float penetration = radius - dist;
-
-				pos += normal * penetration;
-				totalNormal += normal;
+				result.push_back({tile, closestPoint});
 			}
 		}
 	}
 
-	if (!collided)
+	return result;
+}
+
+std::optional<Vector3> map::MapCollider::calculateSphereCollisionNormals(
+	const Map &map,
+	Vector3 &pos,
+	float radius
+) {
+	if (map.getWidth() <= 0 || map.getHeight() <= 0 || radius <= 0.0f)
 		return std::nullopt;
 
+	const std::vector<map::TileCollisionData> collidedTiles = collideTilesInRange(map, pos, radius);
+	if (collidedTiles.empty())
+		return std::nullopt;
+
+	Vector3 totalNormal = {0.0f, 0.0f, 0.0f};
+
+	for (const auto &[tile, contactPoint] : collidedTiles) {
+		const Vector3 pointToSphere = pos - contactPoint;
+		const float dist = Vector3Length(pointToSphere);
+		const Vector3 normal = (dist > constants::epsilon) ? (pointToSphere / dist) : utils::math::getUpVector();
+		const float penetration = radius - dist;
+		pos += normal * penetration;
+		totalNormal += normal;
+	}
 	if (Vector3LengthSqr(totalNormal) > constants::epsilon) {
 		return Vector3Normalize(totalNormal);
 	}
 
-	return Vector3{0.0f, 1.0f, 0.0f};
+	return utils::math::getUpVector();
 }

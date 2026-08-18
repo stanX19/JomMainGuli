@@ -72,7 +72,7 @@ CC			= $(CC_BASE)
 endif
 
 LFLAGS		= $(LINKER) -Lincludes/raylib -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
-CFLAGS		= -std=c++20 -Wall -Wextra -Werror -MMD -MP -fmax-errors=3
+CFLAGS		= -std=c++20 -Wall -Wextra -Werror -std=c++17 -MMD -MP -fmax-errors=3
 AR			= ar -rcs
 RM			= rm -rf
 UP			= \033[1A
@@ -196,6 +196,9 @@ $(RAYLIB_LIB): $(RAYLIB_SRC_DIR)/libraylib.a
 	@cp -f $(RAYLIB_SRC_DIR)/raylib.h $(RAYLIB_SRC_DIR)/raymath.h $(RAYLIB_SRC_DIR)/rcamera.h $(RAYLIB_SRC_DIR)/rlgl.h $(RAYLIB_DIR)/
 
 setup: $(RAYLIB_LIB)
+
+check:
+	valgrind --track-origins=yes --leak-check=full ./$(NAME) $(ARGV) 2>&1 | tail -n 200
 
 clean:
 	@$(RM) $(OBJS) $(OBJS:.o=.d) $(PCH) $(PCH_DEPS) $(CATCH_OBJ) $(CATCH_DEP) $(TEST_ARCHIVE) \
