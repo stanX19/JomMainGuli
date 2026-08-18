@@ -12,7 +12,7 @@ using namespace component;
 namespace {
 	constexpr float FOCUS_POINT_DISTANCE = 10.0f;
 	constexpr float CLOSEST_TILE_SEARCH_RADIUS = 50.0f;
-	constexpr float SHOOT_SPEED = 480.0f;
+	constexpr float SHOOT_SPEED = 120.0f;
 	constexpr float PARTICLE_SPAWN_INTERVAL = 0.15f;
 
 	
@@ -49,8 +49,8 @@ namespace {
 		}
 	}
 }
-
-std::optional<Color> systems::PlayerMagicCast::sampleTileColor(const map::Map &map, const Vector3 &samplePos, float searchRadius) {
+	
+std::optional<systems::PlayerMagicCast::SpawnData> systems::PlayerMagicCast::sampleTileColor(const map::Map &map, const Vector3 &samplePos, float searchRadius) {
 	Vector3 queryPos = samplePos;
 	const std::vector<map::TileCollisionData> tilesInRange
 		= map::MapCollider::collideTilesInRange(map, queryPos, searchRadius);
@@ -77,7 +77,10 @@ std::optional<Color> systems::PlayerMagicCast::sampleTileColor(const map::Map &m
 	for (size_t i = 0; i < distWeights.size(); ++i) {
 		cumWeight += distWeights[i];
 		if (chosenRng < cumWeight) {
-			return map::Map::getRaylibColor(tilesInRange[i].tile.color);
+			return SpawnData{
+				.color = map::Map::getRaylibColor(tilesInRange[i].tile.color),
+				.loc = tilesInRange[i].contactPoint
+			};
 		}
 	}
 
@@ -98,9 +101,9 @@ void systems::PlayerMagicCast::handleLMBDown(GameContext &context, const Ray &ra
 
 	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || castState.spawnTimer >= PARTICLE_SPAWN_INTERVAL) {
 		castState.spawnTimer = 0.0f;
-		const std::optional<Color> particleColor = sampleTileColor(context.map, playerPos, CLOSEST_TILE_SEARCH_RADIUS);
-		if (particleColor) {
-			entity::spawnMagicParticle(context, focusPoint, *particleColor, context.currentPlayer);
+		const std::optional<SpawnData> spawnData = sampleTileColor(context.map, playerPos, CLOSEST_TILE_SEARCH_RADIUS);
+		if (spawnData) {
+			entity::spawnMagicParticle(context, focusPoint, spawnData->color, context.currentPlayer);
 		}
 	}
 	updateHeldParticles(context, focusPoint, dt);

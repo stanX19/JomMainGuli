@@ -23,13 +23,10 @@ entt::entity entity::spawnPlayer(GameContext &context, Vector3 pos) {
 	context.registry.emplace<RenderBody>(player, RenderBody{sphereModelId, SKYBLUE, 2.0f});
 	context.registry.emplace<CollisionBody>(player, CollisionBody{2.0f});
 
-	SpawnsTrailParticles trail{};
-	trail.spawnCount = 1;
-	trail.spawnLocations[0] = Vector3{0.0f, 0.0f, -1.0f};
-	trail.radius = 0.6f;
-	trail.lifespan = 0.8f;
-	trail.color = SKYBLUE;
-	context.registry.emplace<SpawnsTrailParticles>(player, trail);
+	context.registry.emplace<SpawnsTrailParticles>(player, SpawnsTrailParticles{
+		.radius = 0.6f,
+		.color = SKYBLUE
+	});
 
 	context.registry.emplace<UnitCamera>(player);
 

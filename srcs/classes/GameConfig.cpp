@@ -1,12 +1,39 @@
 #include "GameConfig.hpp"
 #include "SubGameConfig.hpp"
 
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
 
+GameConfig::GameConfig() {
+	init("assets/config");
+}
+
+GameConfig::GameConfig(const std::string& configDir) {
+	init(configDir);
+}
+
 SubGameConfig GameConfig::getSubConfig(const std::string& path) const {
 	return SubGameConfig(this, path);
+}
+
+void GameConfig::init(const std::string& configDir) {
+	if (m_loaded)
+		return;
+
+	std::vector<RootSource> sources;
+	if (std::filesystem::exists(configDir) && std::filesystem::is_directory(configDir)) {
+		for (const auto& entry : std::filesystem::directory_iterator(configDir)) {
+			if (!entry.is_regular_file() || entry.path().extension() != ".json")
+				continue;
+
+			const std::string rootName = entry.path().stem().string();
+			sources.emplace_back(rootName, entry.path().string());
+		}
+	}
+
+	init(sources);
 }
 
 void GameConfig::init(std::initializer_list<RootSource> sources) {
@@ -14,8 +41,14 @@ void GameConfig::init(std::initializer_list<RootSource> sources) {
 }
 
 void GameConfig::init(const std::vector<RootSource>& sources) {
-	if (m_loaded || sources.empty())
+	if (m_loaded)
 		return;
+
+	if (sources.empty()) {
+		m_loaded = true;
+		initConstants();
+		return;
+	}
 
 	nlohmann::json candidate = nlohmann::json::object();
 	std::map<std::string, RootJsonFile> candidateFiles;
@@ -48,6 +81,10 @@ void GameConfig::initConstants() {
 	physics.collisionElasticity = getFloat("physics.collisionElasticity", 0.5f);
 	physics.maxAngularKick = getFloat("physics.maxAngularKick", 0.5f);
 	physics.roughness = getFloat("physics.roughness", 2.5f);
+	physics.gravity = getFloat("physics.gravity", 120.0f);
+
+	map.tileSize = getFloat("map.tileSize", 50.0f);
+	map.heightScale = getFloat("map.heightScale", 50.0f);
 
 	settings.masterVolume = getFloat("audio.masterVolume", 0.5f);
 	settings.controlSensitivity = Clamp(

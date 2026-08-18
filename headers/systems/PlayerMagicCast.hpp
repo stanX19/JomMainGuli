@@ -10,9 +10,14 @@ namespace systems {
 		PlayerMagicCast(std::mt19937& rng): m_rng(rng), m_uDist(0.0f, 1.0f) {}
 
 		void update(GameContext &context, float dt) override;
-		void handleLMBDown(GameContext &context, const Ray &ray, const Vector3 &playerPos, float dt);
-		std::optional<Color> sampleTileColor(const map::Map &map, const Vector3 &samplePos, float searchRadius);
 	private:
+		struct SpawnData {
+			Color color;
+			Vector3 loc;
+		};
+		void handleLMBDown(GameContext &context, const Ray &ray, const Vector3 &playerPos, float dt);
+		std::optional<SpawnData> sampleTileColor(const map::Map &map, const Vector3 &samplePos, float searchRadius);
+		
 		std::mt19937 m_rng;
 		std::uniform_real_distribution<float> m_uDist;
 	};

@@ -6,10 +6,6 @@
 
 namespace component {
 	struct SpawnsTrailParticles {
-		static constexpr std::size_t MAX_SPAWN_LOCATIONS = 8;
-
-		Vector3 spawnLocations[MAX_SPAWN_LOCATIONS]{};
-		std::uint8_t spawnCount = 0;
 		float radius = 0.5f;
 		float lifespan = 1.0f;
 		Color color = SKYBLUE;

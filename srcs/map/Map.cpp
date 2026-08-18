@@ -28,11 +28,11 @@ Color map::Map::getRaylibColor(ColorType type) {
 
 map::Map::Map() = default;
 
-void map::Map::init(int width, int height, float tileSize, float heightScale) {
+void map::Map::init(int width, int height, float tileSize, float tileUnitHeight) {
 	m_width = width;
 	m_height = height;
 	m_tileSize = tileSize;
-	m_heightScale = heightScale;
+	m_tileUnitHeight = tileUnitHeight;
 	m_grid.assign(height, std::vector<TileData>(width, TileData{}));
 	m_initialEntities.clear();
 	m_flagCords = CellCord{0, 0};
@@ -90,7 +90,7 @@ Vector3 map::Map::gridToWorld(int x, int y) const {
 
 	const float worldX = (x + 0.5f) * m_tileSize - halfWidth;
 	const float worldZ = (y + 0.5f) * m_tileSize - halfHeight;
-	const float worldY = getTile(x, y).height * m_heightScale;
+	const float worldY = getTile(x, y).height * m_tileUnitHeight;
 
 	return Vector3{worldX, worldY, worldZ};
 }
@@ -105,7 +105,7 @@ void map::Map::populateTileBounds() {
 
 	const float halfWidth = (m_width * m_tileSize) * 0.5f;
 	const float halfHeight = (m_height * m_tileSize) * 0.5f;
-	const float baseBottom = -2.0f * m_heightScale;
+	const float baseBottom = -2.0f * m_tileUnitHeight;
 
 	for (int y = 0; y < m_height; ++y) {
 		for (int x = 0; x < m_width; ++x) {
@@ -115,11 +115,11 @@ void map::Map::populateTileBounds() {
 			tile.z1 = y * m_tileSize - halfHeight;
 			tile.z2 = (y + 1) * m_tileSize - halfHeight;
 
-			tile.selfHeight = tile.height * m_heightScale;
-			tile.upHeight = (y > 0) ? (m_grid[y - 1][x].height * m_heightScale) : baseBottom;
-			tile.downHeight = (y + 1 < m_height) ? (m_grid[y + 1][x].height * m_heightScale) : baseBottom;
-			tile.leftHeight = (x > 0) ? (m_grid[y][x - 1].height * m_heightScale) : baseBottom;
-			tile.rightHeight = (x + 1 < m_width) ? (m_grid[y][x + 1].height * m_heightScale) : baseBottom;
+			tile.selfHeight = tile.height * m_tileUnitHeight;
+			tile.upHeight = (y > 0) ? (m_grid[y - 1][x].height * m_tileUnitHeight) : baseBottom;
+			tile.downHeight = (y + 1 < m_height) ? (m_grid[y + 1][x].height * m_tileUnitHeight) : baseBottom;
+			tile.leftHeight = (x > 0) ? (m_grid[y][x - 1].height * m_tileUnitHeight) : baseBottom;
+			tile.rightHeight = (x + 1 < m_width) ? (m_grid[y][x + 1].height * m_tileUnitHeight) : baseBottom;
 		}
 	}
 }

@@ -29,7 +29,7 @@ namespace map {
 		int m_width = 0;
 		int m_height = 0;
 		float m_tileSize = 10.0f;
-		float m_heightScale = 1.0f;
+		float m_tileUnitHeight = 1.0f;
 		float m_halfWidth = 0.0f;
 		float m_halfHeight = 0.0f;
 		float m_baseBottom = -2.0f;

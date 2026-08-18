@@ -2,6 +2,7 @@
 
 #include "includes.hpp"
 #include "map/Map.hpp"
+#include "GameConfig.hpp"
 #include <string>
 #include <vector>
 #include <set>
@@ -24,7 +25,7 @@ namespace {
 namespace map {
 	class MapLoader {
 	public:
-		static Map load(const std::string &mapPath);
+		static Map load(const GameConfig &config, const std::string &mapPath);
 
 	private:
 		static constexpr CharColorDef COLOR_DEFS[] = {
@@ -74,7 +75,9 @@ namespace map {
 			const std::vector<std::vector<int>> &heightGrid,
 			const std::vector<std::string> &colorLines,
 			const std::vector<InitialEntity> &entities,
-			CellCord flagCords
+			CellCord flagCords,
+			float tileSize,
+			float tileUnitHeight
 		);
 	};
 } // namespace map

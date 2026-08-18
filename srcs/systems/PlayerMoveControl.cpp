@@ -1,4 +1,5 @@
 #include "systems/PlayerMoveControl.hpp"
+#include "constants.hpp"
 #include "utils.hpp"
 #include <algorithm>
 #include <cmath>
@@ -64,11 +65,21 @@ namespace {
 			velocity.value -= velocity.value * VectorXZ
 			            	* (XZSpeed - maxSpeed) / XZSpeed;
 		}
+	}
 
-		if (IsKeyDown(KEY_SPACE)) {
-			const float upAccel = accel;
-			velocity.value.y += upAccel * dt;
-		}
+	void processJump(GameContext &context, [[maybe_unused]] float dt) {
+		auto [posPtr, velPtr] = context.registry.try_get<Position, Velocity>(context.currentPlayer);
+		if (!posPtr || !velPtr)
+			return;
+
+		if (!IsKeyPressed(KEY_SPACE))
+			return;
+
+		const float gravity = context.config.physics.gravity;
+		const float stepHeight = context.config.map.tileUnitHeight * 1.25f;
+		const float jumpSpeed = std::sqrt(2.0f * gravity * (stepHeight + 1.0f));
+
+		velPtr->value.y += jumpSpeed;
 	}
 }
 
@@ -82,4 +93,5 @@ void systems::PlayerMoveControl::update(GameContext &context, float dt) {
 
 	processMouseLook(*rotPtr, context.config);
 	processMovement(*velPtr, *rotPtr, dt);
+	processJump(context, dt);
 }

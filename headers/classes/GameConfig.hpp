@@ -16,24 +16,11 @@ class GameConfig {
 public:
 	using RootSource = std::pair<std::string, std::string>;
 
-	struct Physics {
-		float collisionElasticity = 0.5f;
-		float maxAngularKick = 0.5f;
-		float roughness = 2.5f;
-	};
-
-	struct Settings {
-		float masterVolume = 0.5f;
-		float controlSensitivity = 1.0f;
-	};
-
-	struct Debug {
-		bool showTarget = false;
-	};
-
-	GameConfig() = default;
+	GameConfig();
+	explicit GameConfig(const std::string& configDir);
 	virtual ~GameConfig() = default;
 
+	void init(const std::string& configDir = "assets/config");
 	void init(const std::vector<RootSource>& sources);
 	void init(std::initializer_list<RootSource> sources);
 	void initConstants();
@@ -68,10 +55,28 @@ public:
 	nlohmann::json getSection(const std::string& path) const;
 	SubGameConfig getSubConfig(const std::string& path) const;
 
+	struct Physics {
+		float collisionElasticity = 0.5f;
+		float maxAngularKick = 0.5f;
+		float roughness = 2.5f;
+		float gravity = 120.0f;
+	} physics;
+
+	struct Map {
+		float tileSize = 50.0f;
+		float heightScale = 50.0f;
+	} map;
+
+	struct Settings {
+		float masterVolume = 0.5f;
+		float controlSensitivity = 1.0f;
+	} settings;
+
+	struct Debug {
+		bool showTarget = false;
+	} debug;
+
 	float ARENA_SIZE = 2000.0f;
-	Physics physics{};
-	Settings settings{};
-	Debug debug{};
 
 private:
 	struct RootJsonFile {

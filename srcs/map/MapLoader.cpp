@@ -269,12 +269,14 @@ void map::MapLoader::populateMap(
 	const std::vector<std::vector<int>> &heightGrid,
 	const std::vector<std::string> &colorLines,
 	const std::vector<InitialEntity> &entities,
-	CellCord flagCords
+	CellCord flagCords,
+	float tileSize,
+	float tileUnitHeight
 ) {
 	const int height = static_cast<int>(heightGrid.size());
 	const int width = height > 0 ? static_cast<int>(heightGrid[0].size()) : 0;
 
-	map.init(width, height, 50.0f, 50.0f);
+	map.init(width, height, tileSize, tileUnitHeight);
 	map.setFlagCords(flagCords);
 
 	for (int y = 0; y < height; ++y) {
@@ -299,7 +301,7 @@ void map::MapLoader::populateMap(
 	}
 }
 
-map::Map map::MapLoader::load(const std::string &mapPath) {
+map::Map map::MapLoader::load(const GameConfig &config, const std::string &mapPath) {
 	const std::vector<std::string> mapLines = readFileLines(mapPath);
 	if (mapLines.empty()) {
 		throw std::runtime_error("MapLoader: Failed to open or read map file '" + mapPath + "'");
@@ -315,6 +317,6 @@ map::Map map::MapLoader::load(const std::string &mapPath) {
 	const auto entities = extractInitialEntities(mapLines, colorLines, flagCords);
 
 	Map mapResult;
-	populateMap(mapResult, heightGrid, colorLines, entities, flagCords);
+	populateMap(mapResult, heightGrid, colorLines, entities, flagCords, config.map.tileSize, config.map.tileUnitHeight);
 	return mapResult;
 }

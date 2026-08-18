@@ -17,10 +17,10 @@ map::MapMeshGenerator::MapMeshGenerator(Map &map)
 	  m_width(map.getWidth()),
 	  m_height(map.getHeight()),
 	  m_tileSize(map.getTileSize()),
-	  m_heightScale(map.getHeightScale()),
+	  m_tileUnitHeight(map.gettileUnitHeight()),
 	  m_halfWidth((m_width * m_tileSize) * 0.5f),
 	  m_halfHeight((m_height * m_tileSize) * 0.5f),
-	  m_baseBottom(-2.0f * m_heightScale)
+	  m_baseBottom(-2.0f * m_tileUnitHeight)
 {}
 
 void map::MapMeshGenerator::addTriangle(
@@ -79,7 +79,7 @@ void map::MapMeshGenerator::addTileSides(
 	Color color
 ) {
 	// North (y - 1): z0 face
-	const float northY = (y > 0) ? (m_map.getTile(x, y - 1).height * m_heightScale) : m_baseBottom;
+	const float northY = (y > 0) ? (m_map.getTile(x, y - 1).height * m_tileUnitHeight) : m_baseBottom;
 	if (yTop > northY) {
 		const Vector3 n0 = {x1, yTop, z0};
 		const Vector3 n1 = {x1, northY, z0};
@@ -89,7 +89,7 @@ void map::MapMeshGenerator::addTileSides(
 	}
 
 	// South (y + 1): z1 face
-	const float southY = (y + 1 < m_height) ? (m_map.getTile(x, y + 1).height * m_heightScale) : m_baseBottom;
+	const float southY = (y + 1 < m_height) ? (m_map.getTile(x, y + 1).height * m_tileUnitHeight) : m_baseBottom;
 	if (yTop > southY) {
 		const Vector3 s0 = {x0, yTop, z1};
 		const Vector3 s1 = {x0, southY, z1};
@@ -99,7 +99,7 @@ void map::MapMeshGenerator::addTileSides(
 	}
 
 	// West (x - 1): x0 face
-	const float westY = (x > 0) ? (m_map.getTile(x - 1, y).height * m_heightScale) : m_baseBottom;
+	const float westY = (x > 0) ? (m_map.getTile(x - 1, y).height * m_tileUnitHeight) : m_baseBottom;
 	if (yTop > westY) {
 		const Vector3 w0 = {x0, yTop, z0};
 		const Vector3 w1 = {x0, westY, z0};
@@ -109,7 +109,7 @@ void map::MapMeshGenerator::addTileSides(
 	}
 
 	// East (x + 1): x1 face
-	const float eastY = (x + 1 < m_width) ? (m_map.getTile(x + 1, y).height * m_heightScale) : m_baseBottom;
+	const float eastY = (x + 1 < m_width) ? (m_map.getTile(x + 1, y).height * m_tileUnitHeight) : m_baseBottom;
 	if (yTop > eastY) {
 		const Vector3 e0 = {x1, yTop, z1};
 		const Vector3 e1 = {x1, eastY, z1};
@@ -171,7 +171,7 @@ Mesh map::MapMeshGenerator::generateMesh() {
 			const float x1 = (x + 1) * m_tileSize - m_halfWidth;
 			const float z0 = y * m_tileSize - m_halfHeight;
 			const float z1 = (y + 1) * m_tileSize - m_halfHeight;
-			const float yTop = tile.height * m_heightScale;
+			const float yTop = tile.height * m_tileUnitHeight;
 
 			addTileTop(x0, x1, z0, z1, yTop, tileColor);
 			addTileSides(x, y, x0, x1, z0, z1, yTop, tileColor);
