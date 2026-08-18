@@ -1,6 +1,7 @@
 #include "ModelManager.hpp"
 #include "GameConfig.hpp"
 #include "utils.hpp"
+#include "rlgl.h"
 #include <filesystem>
 #include <iostream>
 #include <stdexcept>
@@ -221,6 +222,9 @@ std::optional<std::string> ModelManager::getModelPath(ModelId id) const {
 
 void ModelManager::unloadAll() {
   for (auto &model : m_models) {
+    for (int i = 0; i < model.materialCount; ++i) {
+      model.materials[i].shader = {rlGetShaderIdDefault(), rlGetShaderLocsDefault()};
+    }
     UnloadModel(model);
   }
   m_models.clear();

@@ -18,7 +18,13 @@ Renderer::~Renderer()
 {
 	if (m_lightedShader.id != 0)
 	{
+		UnloadShader(m_lightedShader);
 		m_lightedShader = {0, nullptr};
+	}
+	if (m_defaultShader.id != 0)
+	{
+		UnloadShader(m_defaultShader);
+		m_defaultShader = {0, nullptr};
 	}
 }
 
@@ -34,6 +40,7 @@ void Renderer::loadShaderWithFallback()
 	if (m_lightedShader.id == 0)
 	{
 		TraceLog(LOG_WARNING, "Custom shader failed to load. Using default shader.");
+		UnloadShader(m_lightedShader);
 		m_lightedShader = LoadShader(nullptr, nullptr);
 	}
 }
