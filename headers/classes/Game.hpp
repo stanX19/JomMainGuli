@@ -20,6 +20,7 @@ private:
 
 	systems::PlayerMoveControl m_playerMoveControl;
 	systems::PlayerMagicCast m_playerMagicCast;
+	systems::ParticleAttraction m_particleAttraction;
 	systems::EntityMovement m_entityMovement;
 	systems::EntityWorldCollision m_entityWorldCollision;
 	systems::DetectEntityCollision m_detectEntityCollision;

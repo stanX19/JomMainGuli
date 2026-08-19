@@ -12,10 +12,7 @@ namespace {
 		if (!evt.context)
 			return;
 		entt::registry &registry = evt.context->registry;
-
-		if (registry.all_of<CastedParticle>(a.id) || registry.all_of<CastedParticle>(b.id)) {
-			return;
-		}
+		
 		auto [aMass, aVel, aRot] = registry.try_get<Mass, Velocity, Rotation>(a.id);
 		auto [bMass, bVel, bRot] = registry.try_get<Mass, Velocity, Rotation>(b.id);
 

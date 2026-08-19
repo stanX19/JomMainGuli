@@ -4,7 +4,7 @@
 
 namespace component {
 	struct MagicCastState {
-		Vector3 focusPoint = {0.0f, 0.0f, 0.0f};
+		entt::entity graviton = entt::null;
 		float castTimer = 0.0f;
 		float spawnTimer = 0.0f;
 		int spawnCount = 0;
@@ -14,7 +14,8 @@ namespace component {
 		Color color = WHITE;
 	};
 
-	struct CastedParticle {
-		entt::entity caster = entt::null;
+	struct AttractedBy {
+		entt::entity target = entt::null;
+		float strength = 100.0f;
 	};
 } // namespace component

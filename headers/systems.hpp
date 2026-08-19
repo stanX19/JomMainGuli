@@ -4,6 +4,7 @@
 #include "systems/CameraFollowPlayer.hpp"
 #include "systems/PlayerMoveControl.hpp"
 #include "systems/PlayerMagicCast.hpp"
+#include "systems/ParticleAttraction.hpp"
 #include "systems/EntityMovement.hpp"
 #include "systems/DetectEntityCollision.hpp"
 #include "systems/EntityTransformation.hpp"

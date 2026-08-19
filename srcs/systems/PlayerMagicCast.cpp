@@ -10,50 +10,32 @@
 using namespace component;
 
 namespace {
-	void updateHeldParticles(GameContext &context, const Vector3 &focusPoint, const Vector3 &rayDirection, float dt, float castRadius) {
-		for (auto [entity, pos, vel, casted] : context.registry.view<Position, Velocity, CastedParticle>().each()) {
-			if (casted.caster != context.currentPlayer)
-				continue;
-
-			const Vector3 toFocus = focusPoint - pos.value;
-			const float distSq = Vector3LengthSqr(toFocus);
-
-			if (distSq > castRadius * castRadius) {
-				continue;
-			}
-			const Vector3 toFocusNorm = Vector3Normalize(toFocus);
-			const Vector3 displacedDir = Vector3CrossProduct(rayDirection, toFocusNorm);
-			const float strength = 100.0f * Clamp(1.0f - (distSq / (castRadius * castRadius)), 0.1f, 1.0f);
-			const Vector3 velChange = (toFocusNorm + displacedDir * 0.01f) * strength;
-			vel.value += velChange * dt;
-			vel.value *= 0.99f; // damping
-		}
+	entt::entity spawnGraviton(GameContext &context, const Vector3 &pos, const Vector3 &vel = {0.0f, 0.0f, 0.0f}) {
+		const entt::entity graviton = context.registry.create();
+		context.registry.emplace<Position>(graviton, Position{pos});
+		context.registry.emplace<Velocity>(graviton, Velocity{vel});
+		return graviton;
 	}
 
-	void releaseHeldParticles(GameContext &context, const Ray &ray, const Vector3 &focusPoint) {
+	void launchGravitonAndParticles(GameContext &context, entt::entity graviton, const Ray &ray) {
+		if (graviton == entt::null || !context.registry.valid(graviton))
+			return;
+
 		const Vector3 targetWorldLoc = ray.position + ray.direction * 1000.0f;
-		std::vector<entt::entity> toRelease;
-
-		for (auto [entity, casted] : context.registry.view<CastedParticle>().each()) {
-			if (casted.caster == context.currentPlayer) {
-				toRelease.push_back(entity);
-			}
-		}
-
 		const float shootSpeed = context.config.magic.shootSpeed;
-		for (entt::entity entity : toRelease) {
-			context.registry.remove<CastedParticle>(entity);
 
-			auto [posPtr, velPtr] = context.registry.try_get<Position, Velocity>(entity);
-			if (!posPtr || !velPtr)
+		auto [gravPos, gravVel] = context.registry.try_get<Position, Velocity>(graviton);
+		if (!gravPos || !gravVel)
+			return;
+
+		const Vector3 shootDir = Vector3Normalize(targetWorldLoc - gravPos->value);
+		gravVel->value = shootDir * shootSpeed;
+
+		for (auto [entity, pos, vel, attracted] : context.registry.view<Position, Velocity, AttractedBy>().each()) {
+			if (attracted.target != graviton)
 				continue;
 
-			if (Vector3Distance(posPtr->value, focusPoint) > context.config.magic.spellCastRadius) {
-				continue;
-			}
-
-			const Vector3 shootDir = Vector3Normalize(targetWorldLoc - posPtr->value);
-			velPtr->value += shootDir * shootSpeed;
+			vel.value += shootDir * shootSpeed;
 		}
 	}
 }
@@ -97,14 +79,23 @@ std::optional<systems::PlayerMagicCast::SpawnData> systems::PlayerMagicCast::sam
 
 void systems::PlayerMagicCast::handleLMBDown(GameContext &context, const Ray &ray, const Vector3 &playerPos, float dt) {
 	const Vector3 focusPoint = ray.position + ray.direction * context.config.magic.focusDistance;
+	const Vector3 rayDir = Vector3Normalize(ray.direction);
 
 	MagicCastState &castState = context.registry.get_or_emplace<MagicCastState>(context.currentPlayer, MagicCastState{
-		.focusPoint = focusPoint,
-		.castTimer = 0,
-		.spawnTimer = 0,
+		.graviton = spawnGraviton(context, focusPoint, rayDir),
+		.castTimer = 0.0f,
+		.spawnTimer = 0.0f,
 		.spawnCount = 0
 	});
-	castState.focusPoint = focusPoint;
+
+	auto [gravitonPos, gravitonVel] = context.registry.try_get<Position, Velocity>(castState.graviton);
+	if (gravitonPos) {
+		gravitonPos->value = focusPoint;
+	}
+	if (gravitonVel) {
+		gravitonVel->value = rayDir;
+	}
+
 	castState.castTimer += dt;
 	castState.spawnTimer += dt;
 
@@ -112,12 +103,10 @@ void systems::PlayerMagicCast::handleLMBDown(GameContext &context, const Ray &ra
 		castState.spawnTimer = 0.0f;
 		const std::optional<SpawnData> spawnData = sampleTileColor(context.map, playerPos, context.config.magic.spellCastRadius);
 		if (spawnData) {
-			entity::spawnMagicParticle(context, focusPoint, spawnData->color, context.currentPlayer, 0.2f);
+			entity::spawnMagicParticle(context, focusPoint, spawnData->color, castState.graviton, 0.2f);
 			castState.spawnCount++;
 		}
 	}
-	const Vector3 rayDir = Vector3Normalize(ray.direction);
-	updateHeldParticles(context, focusPoint, rayDir, dt, context.config.magic.spellCastRadius);
 }
 
 void systems::PlayerMagicCast::update(GameContext &context, float dt) {
@@ -138,6 +127,7 @@ void systems::PlayerMagicCast::update(GameContext &context, float dt) {
 	MagicCastState *castState = context.registry.try_get<MagicCastState>(context.currentPlayer);
 	if (!castState)
 		return;
+
+	launchGravitonAndParticles(context, castState->graviton, ray);
 	context.registry.remove<MagicCastState>(context.currentPlayer);
-	releaseHeldParticles(context, ray, castState->focusPoint);
 }

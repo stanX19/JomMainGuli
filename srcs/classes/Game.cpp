@@ -32,6 +32,7 @@ EngineState Game::run() {
 
 		m_playerMoveControl.update(m_context, dt);
 		m_playerMagicCast.update(m_context, dt);
+		m_particleAttraction.update(m_context, dt);
 		m_entityMovement.update(m_context, dt);
 		m_entityWorldCollision.update(m_context, dt);
 		m_detectEntityCollision.update(m_context, dt);

@@ -3,7 +3,7 @@
 
 using namespace component;
 
-entt::entity entity::spawnMagicParticle(GameContext &context, Vector3 pos, Color color, entt::entity caster, float radius) {
+entt::entity entity::spawnMagicParticle(GameContext &context, Vector3 pos, Color color, entt::entity target, float radius) {
 	const entt::entity particle = context.registry.create();
 
 	context.registry.emplace<Position>(particle, Position{pos});
@@ -22,8 +22,8 @@ entt::entity entity::spawnMagicParticle(GameContext &context, Vector3 pos, Color
 		.lifespan = 0.3f,
 		.color = color,
 	});
-	if (caster != entt::null) {
-		context.registry.emplace<CastedParticle>(particle, CastedParticle{caster});
+	if (target != entt::null) {
+		context.registry.emplace<AttractedBy>(particle, AttractedBy{target, 100.0f});
 	}
 
 	return particle;
