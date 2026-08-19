@@ -23,7 +23,9 @@ void systems::EntityWorldCollision::update(GameContext &context, [[maybe_unused]
 		const float velAlongNormal = Vector3DotProduct(vel.value, *normal);
 		if (velAlongNormal < 0.0f) {
 			const float e = (std::abs(velAlongNormal) < 2.0f) ? 0.0f : elasticity;
-			vel.value -= *normal * ((1.0f + e) * velAlongNormal);
+			const Vector3 normalVel = *normal * velAlongNormal;
+			const Vector3 tangentVel = vel.value - normalVel;
+			vel.value = normalVel * -e + tangentVel * 0.99f;
 		}
 	}
 }

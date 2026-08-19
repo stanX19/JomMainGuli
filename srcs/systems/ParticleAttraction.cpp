@@ -18,18 +18,15 @@ void systems::ParticleAttraction::update(GameContext &context, float dt) {
 		if (!gravitonPos || !gravitonVel)
 			continue;
 
-		const Vector3 toTarget = gravitonPos->value - pos.value;
-		const float distSq = Vector3LengthSqr(toTarget);
 		const float castRadius = context.config.magic.spellCastRadius;
-
-		if (distSq > castRadius * castRadius || distSq < constants::epsilon)
-			continue;
-
-		const Vector3 toTargetNorm = Vector3Normalize(toTarget);
-		const Vector3 gravitonVelNorm = Vector3Normalize(gravitonVel->value);
-		const Vector3 displacedDir = Vector3CrossProduct(gravitonVelNorm, toTargetNorm); // for swirl
-		const float strength = attracted.strength * Clamp(1.0f - (distSq / (castRadius * castRadius)), 0.1f, 1.0f);
-		const Vector3 velChange = (toTargetNorm + displacedDir * 0.01f) * strength;
+		const Vector3 velChange = utils::algorithm::calculateVortexAttractionVelocity(
+			pos.value,
+			gravitonPos->value,
+			gravitonVel->value,
+			attracted.strength,
+			castRadius,
+			0.01f
+		);
 
 		vel.value += velChange * dt;
 		const Vector3 relVel = vel.value - gravitonVel->value;

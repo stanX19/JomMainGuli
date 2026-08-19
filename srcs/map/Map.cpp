@@ -111,6 +111,21 @@ bool map::Map::isWithinHole(Vector3 worldPos) const {
 	return false;
 }
 
+std::optional<map::CellCord> map::Map::getHoleCellIfInHole(Vector3 worldPos) const {
+	const float holeRadius = getHoleRadius();
+	for (const auto &hole : m_holeCords) {
+		const Vector3 holeCenter = gridToWorld(hole);
+		if (Vector3Distance(worldPos, holeCenter) < holeRadius) {
+			return hole;
+		}
+	}
+	return std::nullopt;
+}
+
+Vector3 map::Map::getHoleCenter(CellCord cell) const {
+	return gridToWorld(cell);
+}
+
 void map::Map::populateTileBounds() {
 	if (m_width <= 0 || m_height <= 0)
 		return;
@@ -152,6 +167,8 @@ void map::Map::spawnAll(GameContext &context) const {
 			entity::spawnPlayer(context, worldPos);
 			playerSpawnPos = worldPos;
 			playerSpawned = true;
+		} else if (entity.type == EntityType::Guli) {
+			entity::spawnGuli(context, worldPos, 1.0f);
 		} else {
 			entity::spawnOrb(context, worldPos, entityColor, 1.0f);
 		}

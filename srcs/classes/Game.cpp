@@ -36,6 +36,7 @@ EngineState Game::run() {
 		m_entityMovement.update(m_context, dt);
 		m_entityWorldCollision.update(m_context, dt);
 		m_detectEntityCollision.update(m_context, dt);
+		m_guliInHoleSystem.update(m_context, dt);
 		m_context.dispatcher.update();
 		m_context.soundManager.update(m_context.mainCamera);
 

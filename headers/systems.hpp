@@ -11,3 +11,4 @@
 #include "systems/EntityLifetime.hpp"
 #include "systems/EntityWorldCollision.hpp"
 #include "systems/SpawnTrailParticles.hpp"
+#include "systems/GuliInHoleSystem.hpp"

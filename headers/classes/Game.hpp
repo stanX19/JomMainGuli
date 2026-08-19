@@ -28,6 +28,7 @@ private:
 	systems::SpawnTrailParticles m_spawnTrailParticles;
 	systems::EntityTransformation m_entityTransformation;
 	systems::EntityLifetime m_entityLifetime;
+	systems::GuliInHoleSystem m_guliInHoleSystem;
 
 	void inputControls([[maybe_unused]] float dt, EngineState &nextState);
 };

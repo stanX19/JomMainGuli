@@ -37,6 +37,8 @@ namespace map {
 		float getHoleRadius() const { return m_tileSize * 0.5f * m_holeRadiusRatio; }
 		float getHoleRadiusPercent() const { return m_holeRadiusRatio; }
 		bool isWithinHole(Vector3 worldPos) const;
+		std::optional<CellCord> getHoleCellIfInHole(Vector3 worldPos) const;
+		Vector3 getHoleCenter(CellCord cell) const;
 		const std::vector<InitialEntity>& getInitialEntities() const { return m_initialEntities; }
 		const std::vector<std::vector<TileData>>& getGrid() const { return m_grid; }
 

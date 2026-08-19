@@ -27,6 +27,14 @@ namespace map {
 	struct CellCord {
 		int x = 0;
 		int y = 0;
+
+		bool operator==(const CellCord &other) const {
+			return x == other.x && y == other.y;
+		}
+
+		bool operator!=(const CellCord &other) const {
+			return !(*this == other);
+		}
 	};
 
 	struct TileData {

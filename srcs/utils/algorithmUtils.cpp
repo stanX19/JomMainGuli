@@ -130,3 +130,26 @@ Vector3 utils::collision::calculateVelocityBiasedDirection(
 	}
 	return Vector3Normalize(finalDir);
 }
+
+Vector3 utils::algorithm::calculateVortexAttractionVelocity(
+	const Vector3 &particlePos,
+	const Vector3 &gravityPos,
+	const Vector3 &gravityAxis,
+	float strength,
+	float maxRadius,
+	float swirlRatio)
+{
+	const Vector3 toTarget = gravityPos - particlePos;
+	const float distSq = Vector3LengthSqr(toTarget);
+
+	if (distSq > maxRadius * maxRadius || distSq < constants::epsilon)
+		return Vector3{0.0f, 0.0f, 0.0f};
+
+	const Vector3 toTargetNorm = Vector3Normalize(toTarget);
+	const Vector3 gravitonVelNorm = Vector3Normalize(gravityAxis);
+	const Vector3 displacedDir = Vector3CrossProduct(gravitonVelNorm, toTargetNorm);
+	const float calculatedStrength = strength * Clamp(1.0f - (distSq / (maxRadius * maxRadius)), 0.1f, 1.0f);
+	const Vector3 velChange = (toTargetNorm + displacedDir * swirlRatio) * calculatedStrength;
+
+	return velChange;
+}

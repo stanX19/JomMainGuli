@@ -7,6 +7,8 @@
 #include <vector>
 #include "gridUtils.hpp"
 #include "mathUtils.hpp"
+#include "enttUtils.hpp"
+#include "algorithmUtils.hpp"
 
 namespace utils::color {
 	Color colorRevert(Color a);
