@@ -88,6 +88,7 @@ void GameConfig::initConstants() {
 	magic.shootSpeed = getFloat("magic.shootSpeed", 120.0f);
 	magic.spawnInterval = getFloat("magic.spawnInterval", 0.15f);
 	magic.maxSpawnCount = getInt("magic.maxSpawnCount", 15);
+	magic.gravitonLifespan = getFloat("magic.gravitonLifespan", 10.0f);
 
 	map.tileSize = getFloat("map.tileSize", 50.0f);
 	map.tileUnitHeight = getFloat("map.tileUnitHeight", 50.0f);

@@ -27,6 +27,7 @@ namespace {
 		auto [gravPos, gravVel] = context.registry.try_get<Position, Velocity>(graviton);
 		if (!gravPos || !gravVel)
 			return;
+		context.registry.emplace_or_replace<Lifespan>(graviton, Lifespan{context.config.magic.gravitonLifespan});
 
 		const Vector3 shootDir = Vector3Normalize(targetWorldLoc - gravPos->value);
 		gravVel->value = shootDir * shootSpeed;

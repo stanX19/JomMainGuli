@@ -3,5 +3,6 @@
 	"focusDistance": 10.0,
 	"shootSpeed": 120.0,
 	"spawnInterval": 0.15,
-	"maxSpawnCount": 25
+	"maxSpawnCount": 25,
+	"gravitonLifespan": 10.0
 }

@@ -24,16 +24,13 @@ std::vector<map::TileCollisionData> map::MapCollider::collideTilesInRange(
 	for (int y = startY; y <= endY; ++y) {
 		for (int x = startX; x <= endX; ++x) {
 			const TileData &tile = map.getTile(x, y);
+			const Vector3 closestPoint = {
+				std::clamp(pos.x, tile.x1, tile.x2),
+				std::clamp(pos.y, -100.0f, tile.selfHeight),
+				std::clamp(pos.z, tile.z1, tile.z2)
+			};
 
-			const float clampedX = std::clamp(pos.x, tile.x1, tile.x2);
-			const float clampedY = std::clamp(pos.y, -100.0f, tile.selfHeight);
-			const float clampedZ = std::clamp(pos.z, tile.z1, tile.z2);
-			const Vector3 closestPoint = {clampedX, clampedY, clampedZ};
-
-			const Vector3 pointToSphere = pos - closestPoint;
-			const float distSq = Vector3LengthSqr(pointToSphere);
-
-			if (distSq < radius * radius) {
+			if (Vector3LengthSqr(pos - closestPoint) < radius * radius) {
 				result.push_back({tile, closestPoint});
 			}
 		}
@@ -45,6 +42,7 @@ std::vector<map::TileCollisionData> map::MapCollider::collideTilesInRange(
 std::optional<Vector3> map::MapCollider::calculateSphereCollisionNormals(
 	const Map &map,
 	Vector3 &pos,
+	const Vector3 &prevPos,
 	float radius
 ) {
 	if (map.getWidth() <= 0 || map.getHeight() <= 0 || radius <= 0.0f)
@@ -59,14 +57,44 @@ std::optional<Vector3> map::MapCollider::calculateSphereCollisionNormals(
 	for (const auto &[tile, contactPoint] : collidedTiles) {
 		const Vector3 pointToSphere = pos - contactPoint;
 		const float dist = Vector3Length(pointToSphere);
-		const Vector3 normal = (dist > constants::epsilon) ? (pointToSphere / dist) : utils::math::getUpVector();
-		const float penetration = radius - dist;
-		pos += normal * penetration;
-		totalNormal += normal;
-	}
-	if (Vector3LengthSqr(totalNormal) > constants::epsilon) {
-		return Vector3Normalize(totalNormal);
+
+		if (dist > constants::epsilon) {
+			const Vector3 normal = pointToSphere / dist;
+			pos += normal * (radius - dist);
+			totalNormal += normal;
+			continue;
+		}
+
+		// else, its inside the cell body already
+		// use prev pos to find out entering face
+		if (prevPos.y >= tile.selfHeight) {
+			// pos.y = tile.selfHeight + radius;
+			totalNormal += Vector3{0.0f, 1.0f, 0.0f};
+		} else if (prevPos.x <= tile.x1) {
+			// pos.x = tile.x1 - radius;
+			totalNormal += Vector3{-1.0f, 0.0f, 0.0f};
+		} else if (prevPos.x >= tile.x2) {
+			// pos.x = tile.x2 + radius;
+			totalNormal += Vector3{1.0f, 0.0f, 0.0f};
+		} else if (prevPos.z <= tile.z1) {
+			// pos.z = tile.z1 - radius;
+			totalNormal += Vector3{0.0f, 0.0f, -1.0f};
+		} else if (prevPos.z >= tile.z2) {
+			// pos.z = tile.z2 + radius;
+			totalNormal += Vector3{0.0f, 0.0f, 1.0f};
+		}
 	}
 
+	if (Vector3LengthSqr(totalNormal) > constants::epsilon)
+		return Vector3Normalize(totalNormal);
+
 	return utils::math::getUpVector();
+}
+
+std::optional<Vector3> map::MapCollider::calculateSphereCollisionNormals(
+	const Map &map,
+	Vector3 &pos,
+	float radius
+) {
+	return calculateSphereCollisionNormals(map, pos, pos, radius);
 }

@@ -68,6 +68,7 @@ public:
 		float shootSpeed = 120.0f;
 		float spawnInterval = 0.15f;
 		int maxSpawnCount = 15;
+		float gravitonLifespan = 10.0f;
 	} magic;
 
 	struct Map {

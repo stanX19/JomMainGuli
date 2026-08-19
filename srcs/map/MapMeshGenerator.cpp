@@ -17,7 +17,7 @@ map::MapMeshGenerator::MapMeshGenerator(Map &map)
 	  m_width(map.getWidth()),
 	  m_height(map.getHeight()),
 	  m_tileSize(map.getTileSize()),
-	  m_tileUnitHeight(map.gettileUnitHeight()),
+	  m_tileUnitHeight(map.getTileUnitHeight()),
 	  m_halfWidth((m_width * m_tileSize) * 0.5f),
 	  m_halfHeight((m_height * m_tileSize) * 0.5f),
 	  m_baseBottom(-2.0f * m_tileUnitHeight)

@@ -12,6 +12,7 @@ entt::entity entity::spawnMagicParticle(GameContext &context, Vector3 pos, Color
 	context.registry.emplace<Rotation>(particle, Rotation{QuaternionIdentity()});
 	context.registry.emplace<PrevRotation>(particle, PrevRotation{QuaternionIdentity()});
 	context.registry.emplace<Mass>(particle, Mass{0.5f});
+	context.registry.emplace<VerticalGravity>(particle, VerticalGravity{0.5f});
 
 	const ModelId sphereModelId = context.modelManager.createSphere(16, 16, 1.0f);
 	context.registry.emplace<RenderBody>(particle, RenderBody{sphereModelId, color, radius});

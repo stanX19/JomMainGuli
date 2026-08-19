@@ -6,7 +6,7 @@ using namespace component;
 
 namespace {
 	void processGravity(GameContext &context, float dt) {
-		for (auto [entity, vel, gravity] : context.registry.view<component::Velocity, component::VerticalGravity>().each()) {
+		for (auto [entity, vel, gravity] : context.registry.view<component::Velocity, component::VerticalGravity>(entt::exclude<tags::zeroGravity>).each()) {
 			vel.value += utils::math::getUpVector() * context.config.physics.gravity * -gravity.value * dt;
 		}
 	}

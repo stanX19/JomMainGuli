@@ -11,6 +11,12 @@ namespace map {
 		static std::optional<Vector3> calculateSphereCollisionNormals(
 			const Map &map,
 			Vector3 &pos,
+			const Vector3 &prevPos,
+			float radius
+		);
+		static std::optional<Vector3> calculateSphereCollisionNormals(
+			const Map &map,
+			Vector3 &pos,
 			float radius
 		);
 		// cell, collision coordinate

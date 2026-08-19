@@ -30,7 +30,7 @@ namespace map {
 		int getWidth() const { return m_width; }
 		int getHeight() const { return m_height; }
 		float getTileSize() const { return m_tileSize; }
-		float gettileUnitHeight() const { return m_tileUnitHeight; }
+		float getTileUnitHeight() const { return m_tileUnitHeight; }
 
 		std::optional<ModelId> getModelId() const { return m_modelId; }
 		CellCord getFlagCords() const { return m_flagCords; }
