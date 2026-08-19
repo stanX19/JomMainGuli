@@ -10,6 +10,9 @@ namespace {
 	const Vector3 VectorXZ = {1, 0, 1};
 
 	void processMouseLook(Rotation &rotation, const GameConfig &config) {
+		if (IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT) || IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+			return;
+
 		const Vector2 mouseDelta = GetMouseDelta();
 		if (mouseDelta.x == 0.0f && mouseDelta.y == 0.0f)
 			return;

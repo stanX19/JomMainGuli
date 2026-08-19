@@ -62,6 +62,14 @@ public:
 		float gravity = 120.0f;
 	} physics;
 
+	struct Magic {
+		float spellCastRadius = 50.0f;
+		float focusDistance = 10.0f;
+		float shootSpeed = 120.0f;
+		float spawnInterval = 0.15f;
+		int maxSpawnCount = 15;
+	} magic;
+
 	struct Map {
 		float tileSize = 50.0f;
 		float tileUnitHeight = 20.0f;

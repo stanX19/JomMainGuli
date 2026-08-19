@@ -7,6 +7,7 @@ namespace component {
 		Vector3 focusPoint = {0.0f, 0.0f, 0.0f};
 		float castTimer = 0.0f;
 		float spawnTimer = 0.0f;
+		int spawnCount = 0;
 	};
 
 	struct MagicParticle {

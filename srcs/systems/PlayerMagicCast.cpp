@@ -10,24 +10,27 @@
 using namespace component;
 
 namespace {
-	constexpr float FOCUS_POINT_DISTANCE = 10.0f;
-	constexpr float CLOSEST_TILE_SEARCH_RADIUS = 50.0f;
-	constexpr float SHOOT_SPEED = 120.0f;
-	constexpr float PARTICLE_SPAWN_INTERVAL = 0.15f;
-
-	
-	void updateHeldParticles(GameContext &context, const Vector3 &focusPoint, float dt) {
+	void updateHeldParticles(GameContext &context, const Vector3 &focusPoint, const Vector3 &rayDirection, float dt, float castRadius) {
 		for (auto [entity, pos, vel, casted] : context.registry.view<Position, Velocity, CastedParticle>().each()) {
 			if (casted.caster != context.currentPlayer)
 				continue;
 
-			const Vector3 force = (focusPoint - pos.value) * 150.0f - vel.value * 8.0f;
-			vel.value += force * dt;
-			pos.value += vel.value * dt;
+			const Vector3 toFocus = focusPoint - pos.value;
+			const float distSq = Vector3LengthSqr(toFocus);
+
+			if (distSq > castRadius * castRadius) {
+				continue;
+			}
+			const Vector3 toFocusNorm = Vector3Normalize(toFocus);
+			const Vector3 displacedDir = Vector3CrossProduct(rayDirection, toFocusNorm);
+			const float strength = 100.0f * Clamp(1.0f - (distSq / (castRadius * castRadius)), 0.1f, 1.0f);
+			const Vector3 velChange = (toFocusNorm + displacedDir * 0.01f) * strength;
+			vel.value += velChange * dt;
+			vel.value *= 0.99f; // damping
 		}
 	}
 
-	void releaseHeldParticles(GameContext &context, const Ray &ray) {
+	void releaseHeldParticles(GameContext &context, const Ray &ray, const Vector3 &focusPoint) {
 		const Vector3 targetWorldLoc = ray.position + ray.direction * 1000.0f;
 		std::vector<entt::entity> toRelease;
 
@@ -37,6 +40,7 @@ namespace {
 			}
 		}
 
+		const float shootSpeed = context.config.magic.shootSpeed;
 		for (entt::entity entity : toRelease) {
 			context.registry.remove<CastedParticle>(entity);
 
@@ -44,8 +48,12 @@ namespace {
 			if (!posPtr || !velPtr)
 				continue;
 
+			if (Vector3Distance(posPtr->value, focusPoint) > context.config.magic.spellCastRadius) {
+				continue;
+			}
+
 			const Vector3 shootDir = Vector3Normalize(targetWorldLoc - posPtr->value);
-			velPtr->value += shootDir * SHOOT_SPEED;
+			velPtr->value += shootDir * shootSpeed;
 		}
 	}
 }
@@ -88,25 +96,28 @@ std::optional<systems::PlayerMagicCast::SpawnData> systems::PlayerMagicCast::sam
 }
 
 void systems::PlayerMagicCast::handleLMBDown(GameContext &context, const Ray &ray, const Vector3 &playerPos, float dt) {
-	const Vector3 focusPoint = ray.position + ray.direction * FOCUS_POINT_DISTANCE;
+	const Vector3 focusPoint = ray.position + ray.direction * context.config.magic.focusDistance;
 
 	MagicCastState &castState = context.registry.get_or_emplace<MagicCastState>(context.currentPlayer, MagicCastState{
 		.focusPoint = focusPoint,
 		.castTimer = 0,
-		.spawnTimer = 0
+		.spawnTimer = 0,
+		.spawnCount = 0
 	});
 	castState.focusPoint = focusPoint;
 	castState.castTimer += dt;
 	castState.spawnTimer += dt;
 
-	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || castState.spawnTimer >= PARTICLE_SPAWN_INTERVAL) {
+	if (castState.spawnCount < context.config.magic.maxSpawnCount && castState.spawnTimer >= context.config.magic.spawnInterval) {
 		castState.spawnTimer = 0.0f;
-		const std::optional<SpawnData> spawnData = sampleTileColor(context.map, playerPos, CLOSEST_TILE_SEARCH_RADIUS);
+		const std::optional<SpawnData> spawnData = sampleTileColor(context.map, playerPos, context.config.magic.spellCastRadius);
 		if (spawnData) {
-			entity::spawnMagicParticle(context, focusPoint, spawnData->color, context.currentPlayer);
+			entity::spawnMagicParticle(context, focusPoint, spawnData->color, context.currentPlayer, 0.2f);
+			castState.spawnCount++;
 		}
 	}
-	updateHeldParticles(context, focusPoint, dt);
+	const Vector3 rayDir = Vector3Normalize(ray.direction);
+	updateHeldParticles(context, focusPoint, rayDir, dt, context.config.magic.spellCastRadius);
 }
 
 void systems::PlayerMagicCast::update(GameContext &context, float dt) {
@@ -128,5 +139,5 @@ void systems::PlayerMagicCast::update(GameContext &context, float dt) {
 	if (!castState)
 		return;
 	context.registry.remove<MagicCastState>(context.currentPlayer);
-	releaseHeldParticles(context, ray);
+	releaseHeldParticles(context, ray, castState->focusPoint);
 }

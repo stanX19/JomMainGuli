@@ -83,6 +83,12 @@ void GameConfig::initConstants() {
 	physics.roughness = getFloat("physics.roughness", 2.5f);
 	physics.gravity = getFloat("physics.gravity", 120.0f);
 
+	magic.spellCastRadius = getFloat("magic.spellCastRadius", 50.0f);
+	magic.focusDistance = getFloat("magic.focusDistance", 10.0f);
+	magic.shootSpeed = getFloat("magic.shootSpeed", 120.0f);
+	magic.spawnInterval = getFloat("magic.spawnInterval", 0.15f);
+	magic.maxSpawnCount = getInt("magic.maxSpawnCount", 15);
+
 	map.tileSize = getFloat("map.tileSize", 50.0f);
 	map.tileUnitHeight = getFloat("map.tileUnitHeight", 50.0f);
 

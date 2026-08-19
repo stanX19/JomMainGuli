@@ -1,6 +1,6 @@
 {
   "collisionElasticity": 0.5,
-  "maxAngularKick": 0.5,
+  "maxAngularKick": 0.0,
   "roughness": 2.5,
   "gravity": 120.0
 }

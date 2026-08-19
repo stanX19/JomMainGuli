@@ -19,7 +19,8 @@ entt::entity entity::spawnMagicParticle(GameContext &context, Vector3 pos, Color
 
 	context.registry.emplace<SpawnsTrailParticles>(particle, SpawnsTrailParticles{
 		.radius = radius * 0.3f,
-		.color = color
+		.lifespan = 0.3f,
+		.color = color,
 	});
 	if (caster != entt::null) {
 		context.registry.emplace<CastedParticle>(particle, CastedParticle{caster});
