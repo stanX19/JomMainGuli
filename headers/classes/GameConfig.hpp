@@ -74,6 +74,7 @@ public:
 	struct Map {
 		float tileSize = 50.0f;
 		float tileUnitHeight = 20.0f;
+		float holeRadiusRatio = 0.6f;
 	} map;
 
 	struct Settings {

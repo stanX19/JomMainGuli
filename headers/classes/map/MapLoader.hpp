@@ -43,8 +43,8 @@ namespace map {
 		static constexpr CharEntityDef ENTITY_DEFS[] = {
 			{'P', EntityType::Player},
 			{'S', EntityType::Slime},
-			{'G', EntityType::Golem},
-			{'M', EntityType::Flag},
+			{'G', EntityType::Guli},
+			{'L', EntityType::Lubang},
 		};
 
 		static bool isValidMapChar(char c);
@@ -68,16 +68,17 @@ namespace map {
 		static std::vector<InitialEntity> extractInitialEntities(
 			const std::vector<std::string> &mapLines,
 			const std::vector<std::string> &colorLines,
-			CellCord &outFlagCords
+			std::vector<CellCord> &outHoleCords
 		);
 		static void populateMap(
 			Map &map,
 			const std::vector<std::vector<int>> &heightGrid,
 			const std::vector<std::string> &colorLines,
 			const std::vector<InitialEntity> &entities,
-			CellCord flagCords,
+			const std::vector<CellCord> &holeCords,
 			float tileSize,
-			float tileUnitHeight
+			float tileUnitHeight,
+			float holeRadiusRatio
 		);
 	};
 } // namespace map

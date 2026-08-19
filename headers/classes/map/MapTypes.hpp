@@ -20,8 +20,8 @@ namespace map {
 	enum class EntityType : uint8_t {
 		Player,
 		Slime,
-		Golem,
-		Flag
+		Guli,
+		Lubang
 	};
 
 	struct CellCord {

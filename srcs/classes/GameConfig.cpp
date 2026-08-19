@@ -91,7 +91,8 @@ void GameConfig::initConstants() {
 	magic.gravitonLifespan = getFloat("magic.gravitonLifespan", 10.0f);
 
 	map.tileSize = getFloat("map.tileSize", 50.0f);
-	map.tileUnitHeight = getFloat("map.tileUnitHeight", 50.0f);
+	map.tileUnitHeight = getFloat("map.tileUnitHeight", 20.0f);
+	map.holeRadiusRatio = getFloat("map.holeRadiusRatio", 0.6f);
 
 	settings.masterVolume = getFloat("audio.masterVolume", 0.5f);
 	settings.controlSensitivity = Clamp(

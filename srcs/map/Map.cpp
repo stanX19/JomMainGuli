@@ -28,14 +28,15 @@ Color map::Map::getRaylibColor(ColorType type) {
 
 map::Map::Map() = default;
 
-void map::Map::init(int width, int height, float tileSize, float tileUnitHeight) {
+void map::Map::init(int width, int height, float tileSize, float tileUnitHeight, float holeRadiusRatio) {
 	m_width = width;
 	m_height = height;
 	m_tileSize = tileSize;
 	m_tileUnitHeight = tileUnitHeight;
+	m_holeRadiusRatio = holeRadiusRatio;
 	m_grid.assign(height, std::vector<TileData>(width, TileData{}));
 	m_initialEntities.clear();
-	m_flagCords = CellCord{0, 0};
+	m_holeCords.clear();
 	m_modelId = std::nullopt;
 }
 
@@ -99,6 +100,17 @@ Vector3 map::Map::gridToWorld(CellCord cellCords) const {
 	return gridToWorld(cellCords.x, cellCords.y);
 }
 
+bool map::Map::isWithinHole(Vector3 worldPos) const {
+	const float holeRadius = getHoleRadius();
+	for (const auto &hole : m_holeCords) {
+		const Vector3 holeCenter = gridToWorld(hole);
+		if (Vector3Distance(worldPos, holeCenter) < holeRadius) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void map::Map::populateTileBounds() {
 	if (m_width <= 0 || m_height <= 0)
 		return;
@@ -134,7 +146,7 @@ void map::Map::spawnAll(GameContext &context) const {
 
 	for (const auto &entity : m_initialEntities) {
 		const Vector3 worldPos = gridToWorld(entity.cellCords) + Vector3{0.0f, 1.0f, 0.0f};
-		const Color entityColor = getRaylibColor(entity.color);
+		const Color entityColor = (entity.type == EntityType::Guli) ? WHITE : getRaylibColor(entity.color);
 
 		if (entity.type == EntityType::Player) {
 			entity::spawnPlayer(context, worldPos);
@@ -161,6 +173,6 @@ void map::Map::clear() {
 	m_height = 0;
 	m_grid.clear();
 	m_initialEntities.clear();
-	m_flagCords = CellCord{0, 0};
+	m_holeCords.clear();
 	m_modelId = std::nullopt;
 }

@@ -161,9 +161,9 @@ void map::MapLoader::validate(
 		throw std::runtime_error("MapLoader validation failed: Map must have exactly 1 player ('P')");
 	}
 
-	const int flagCount = utils::grid::countIf(mapLines, [](char c) { return c == 'M'; });
-	if (flagCount != 1) {
-		throw std::runtime_error("MapLoader validation failed: Map must have exactly 1 flag ('M')");
+	const int holeCount = utils::grid::countIf(mapLines, [](char c) { return c == 'L'; });
+	if (holeCount < 1) {
+		throw std::runtime_error("MapLoader validation failed: Map must have at least 1 hole ('L')");
 	}
 
 	std::set<ColorType> foundColors;
@@ -228,7 +228,7 @@ std::vector<std::vector<int>> map::MapLoader::buildHeightGrid(
 std::vector<map::InitialEntity> map::MapLoader::extractInitialEntities(
 	const std::vector<std::string> &mapLines,
 	const std::vector<std::string> &colorLines,
-	CellCord &outFlagCords
+	std::vector<CellCord> &outHoleCords
 ) {
 	const int width = static_cast<int>(mapLines[0].size());
 	const int height = static_cast<int>(mapLines.size());
@@ -243,21 +243,22 @@ std::vector<map::InitialEntity> map::MapLoader::extractInitialEntities(
 			if (!entityOpt.has_value())
 				continue;
 
+			if (*entityOpt == EntityType::Lubang) {
+				outHoleCords.push_back(CellCord{x, y});
+				continue;
+			}
+
 			char cChar = ' ';
 			if (y < static_cast<int>(colorLines.size()) && x < static_cast<int>(colorLines[y].size())) {
 				cChar = colorLines[y][x];
 			}
-			const ColorType colorType = parseColorChar(cChar);
+			const ColorType colorType = (*entityOpt == EntityType::Guli) ? ColorType::White : parseColorChar(cChar);
 
 			InitialEntity entity{};
 			entity.cellCords = CellCord{x, y};
 			entity.type = *entityOpt;
 			entity.color = colorType;
 			entities.push_back(entity);
-
-			if (*entityOpt == EntityType::Flag) {
-				outFlagCords = entity.cellCords;
-			}
 		}
 	}
 
@@ -269,15 +270,16 @@ void map::MapLoader::populateMap(
 	const std::vector<std::vector<int>> &heightGrid,
 	const std::vector<std::string> &colorLines,
 	const std::vector<InitialEntity> &entities,
-	CellCord flagCords,
+	const std::vector<CellCord> &holeCords,
 	float tileSize,
-	float tileUnitHeight
+	float tileUnitHeight,
+	float holeRadiusRatio
 ) {
 	const int height = static_cast<int>(heightGrid.size());
 	const int width = height > 0 ? static_cast<int>(heightGrid[0].size()) : 0;
 
-	map.init(width, height, tileSize, tileUnitHeight);
-	map.setFlagCords(flagCords);
+	map.init(width, height, tileSize, tileUnitHeight, holeRadiusRatio);
+	map.setHoleCords(holeCords);
 
 	for (int y = 0; y < height; ++y) {
 		for (int x = 0; x < width; ++x) {
@@ -312,11 +314,14 @@ map::Map map::MapLoader::load(const GameConfig &config, const std::string &mapPa
 
 	validate(mapLines, colorLines);
 
-	CellCord flagCords = {0, 0};
+	std::vector<CellCord> holeCords;
 	const auto heightGrid = buildHeightGrid(mapLines);
-	const auto entities = extractInitialEntities(mapLines, colorLines, flagCords);
+	const auto entities = extractInitialEntities(mapLines, colorLines, holeCords);
 
 	Map mapResult;
-	populateMap(mapResult, heightGrid, colorLines, entities, flagCords, config.map.tileSize, config.map.tileUnitHeight);
+	populateMap(
+		mapResult, heightGrid, colorLines, entities, holeCords,
+		config.map.tileSize, config.map.tileUnitHeight, config.map.holeRadiusRatio
+	);
 	return mapResult;
 }

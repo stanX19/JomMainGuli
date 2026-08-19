@@ -33,7 +33,10 @@ namespace map {
 		float getTileUnitHeight() const { return m_tileUnitHeight; }
 
 		std::optional<ModelId> getModelId() const { return m_modelId; }
-		CellCord getFlagCords() const { return m_flagCords; }
+		const std::vector<CellCord>& getHoleCords() const { return m_holeCords; }
+		float getHoleRadius() const { return m_tileSize * 0.5f * m_holeRadiusRatio; }
+		float getHoleRadiusPercent() const { return m_holeRadiusRatio; }
+		bool isWithinHole(Vector3 worldPos) const;
 		const std::vector<InitialEntity>& getInitialEntities() const { return m_initialEntities; }
 		const std::vector<std::vector<TileData>>& getGrid() const { return m_grid; }
 
@@ -45,10 +48,11 @@ namespace map {
 		friend class MapLoader;
 		friend class MapMeshGenerator;
 
-		void init(int width, int height, float tileSize, float tileUnitHeight);
+		void init(int width, int height, float tileSize, float tileUnitHeight, float holeRadiusRatio = 0.6f);
 		void setTile(int x, int y, const TileData &tile);
 		void addInitialEntity(const InitialEntity &entity);
-		void setFlagCords(CellCord cords) { m_flagCords = cords; }
+		void setHoleCords(const std::vector<CellCord> &cords) { m_holeCords = cords; }
+		void addHoleCord(CellCord cord) { m_holeCords.push_back(cord); }
 		void setModelId(ModelId id) { m_modelId = id; }
 		void populateTileBounds();
 		void clear();
@@ -57,9 +61,10 @@ namespace map {
 		int m_height = 0;
 		float m_tileSize = 2.0f;
 		float m_tileUnitHeight = 1.0f;
+		float m_holeRadiusRatio = 0.6f;
 		std::vector<std::vector<TileData>> m_grid;
 		std::vector<InitialEntity> m_initialEntities;
-		CellCord m_flagCords = {0, 0};
+		std::vector<CellCord> m_holeCords;
 		std::optional<ModelId> m_modelId = std::nullopt;
 	};
 } // namespace map

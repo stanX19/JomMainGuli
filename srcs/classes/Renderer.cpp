@@ -100,6 +100,17 @@ void Renderer::drawMap()
 		model.materials[i].shader = (m_lightedShader.id != 0) ? m_lightedShader : m_defaultShader;
 	}
 	DrawModel(model, Vector3{0.0f, 0.0f, 0.0f}, 1.0f, WHITE);
+
+	const float holeRadius = m_context.map.getHoleRadius();
+	for (const auto &hole : m_context.map.getHoleCords()) {
+		const Vector3 holeCenter = m_context.map.gridToWorld(hole);
+		DrawCircle3D(holeCenter + Vector3{0.0f, 0.1f, 0.0f}, holeRadius, Vector3{1.0f, 0.0f, 0.0f}, 90.0f, SKYBLUE);
+		DrawCircle3D(holeCenter + Vector3{0.0f, 0.1f, 0.0f}, holeRadius + 0.1, Vector3{1.0f, 0.0f, 0.0f}, 90.0f, SKYBLUE);
+		DrawCircle3D(holeCenter + Vector3{0.0f, 0.1f, 0.0f}, holeRadius + 0.2, Vector3{1.0f, 0.0f, 0.0f}, 90.0f, SKYBLUE);
+		DrawCircle3D(holeCenter + Vector3{0.0f, 50.0f, 0.0f}, holeRadius, Vector3{1.0f, 0.0f, 0.0f}, 90.0f, SKYBLUE);
+		DrawCircle3D(holeCenter + Vector3{0.0f, 100.0f, 0.0f}, holeRadius, Vector3{1.0f, 0.0f, 0.0f}, 90.0f, SKYBLUE);
+		DrawCircle3D(holeCenter + Vector3{0.0f, 150.3f, 0.0f}, holeRadius, Vector3{1.0f, 0.0f, 0.0f}, 90.0f, SKYBLUE);
+	}
 }
 
 void Renderer::drawTrails()
