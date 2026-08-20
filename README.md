@@ -150,11 +150,13 @@ make re
 ### Jam Scope Cuts:
 * Focused on polished kinetic momentum and direct heritage recipes rather than complex crafting trees.
 * Chose immediate, athletic real-time LMB channeling over slow slingshot trajectory aiming.
+* Skipped all TTD and testing files for fast delivery
 
 ### If We Had More Time:
 * **Graphics**: Textures, normal mappings on maps, and better Guli glass models.
 * **More Heritage Souvenirs**: 3D Wau Bulan kites, Gasing tops, and Harimau motifs.
 * **Sloped maps**: Between tile heights, make it a slope so marbles can roll down/up naturally
+* **Test suites**: Actually do tdd and add tests
 
 ---
 
