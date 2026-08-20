@@ -58,8 +58,43 @@ namespace {
 		const Quaternion bSpin = QuaternionFromAxisAngle(Vector3Normalize(torqueAxis), -bKick);
 		bRot->value = QuaternionMultiply(bRot->value, bSpin);
 	}
+
+	void triggerCollisionSound(const event::CollisionEvent &evt) {
+		if (!evt.context)
+			return;
+
+		const auto &registry = evt.context->registry;
+		const bool aIsGlass = registry.valid(evt.a.id) && registry.all_of<tags::GlassCollisionSound>(evt.a.id);
+		const bool bIsGlass = registry.valid(evt.b.id) && registry.all_of<tags::GlassCollisionSound>(evt.b.id);
+
+		if (!aIsGlass && !bIsGlass)
+			return;
+
+		const Vector3 normal = Vector3Normalize(evt.b.pos - evt.a.pos);
+		const Vector3 relativeVelocity = evt.b.vel - evt.a.vel;
+		const float velAlongNormal = Vector3DotProduct(relativeVelocity, normal);
+
+		if (velAlongNormal >= -1.5f)
+			return;
+
+		const float impactSpeed = -velAlongNormal;
+		const sound::Id soundId = evt.context->soundManager.getRandomGlassSound();
+		if (soundId == sound::NONE)
+			return;
+
+		const Vector3 collisionPos = (evt.a.pos + evt.b.pos) * 0.5f;
+		const float volume = std::clamp(impactSpeed / 120.0f, 0.15f, 1.0f);
+
+		evt.context->dispatcher.trigger<event::SoundEvent>(event::SoundEvent{
+			evt.context,
+			soundId,
+			collisionPos,
+			volume
+		});
+	}
 }
 
 void event::Listener::handleCollisionEvent(const CollisionEvent &evt) {
 	applyCollisionPhysics(evt);
+	triggerCollisionSound(evt);
 }

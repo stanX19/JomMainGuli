@@ -16,6 +16,7 @@ entt::entity entity::spawnOrb(GameContext &context, Vector3 pos, Color color, fl
 	const ModelId sphereModelId = context.modelManager.createSphere(16, 16, 1.0f);
 	context.registry.emplace<RenderBody>(orb, RenderBody{sphereModelId, color, radius});
 	context.registry.emplace<CollisionBody>(orb, CollisionBody{radius});
+	context.registry.emplace<tags::GlassCollisionSound>(orb);
 
 	return orb;
 }

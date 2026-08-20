@@ -15,6 +15,7 @@ void SoundManager::init(const GameConfig& config) {
 	}
 	m_masterVolume = config.settings.masterVolume;
 	SetMasterVolume(m_masterVolume);
+	loadGlassSounds("assets/sounds");
 	m_initialized = true;
 }
 
@@ -32,6 +33,7 @@ void SoundManager::shutdown() {
 	}
 	m_sounds.clear();
 	m_pathCache.clear();
+	m_glassSounds.clear();
 
 	if (IsAudioDeviceReady()) {
 		CloseAudioDevice();
@@ -58,6 +60,27 @@ sound::Id SoundManager::loadSound(const std::string& path) {
 	m_sounds[id] = snd;
 	m_pathCache[path] = id;
 	return id;
+}
+
+void SoundManager::loadGlassSounds(const std::string& dir) {
+	m_glassSounds.clear();
+	for (int i = 1; i <= 24; ++i) {
+		char filename[64];
+		std::snprintf(filename, sizeof(filename), "/glass_clink_%02d.wav", i);
+		const std::string path = dir + filename;
+		const sound::Id id = loadSound(path);
+		if (id != sound::NONE) {
+			m_glassSounds.push_back(id);
+		}
+	}
+}
+
+sound::Id SoundManager::getRandomGlassSound() const {
+	if (m_glassSounds.empty()) {
+		return sound::NONE;
+	}
+	const int index = GetRandomValue(0, static_cast<int>(m_glassSounds.size()) - 1);
+	return m_glassSounds[index];
 }
 
 void SoundManager::unloadSound(sound::Id id) {
@@ -90,10 +113,19 @@ void SoundManager::update([[maybe_unused]] const Camera3D& camera) {
 
 	for (const auto& req : m_pendingRequests) {
 		const auto it = m_sounds.find(req.id);
-		if (it != m_sounds.end()) {
-			SetSoundVolume(it->second, std::clamp(req.volume, 0.0f, 1.0f));
-			PlaySound(it->second);
+		if (it == m_sounds.end()) {
+			continue;
 		}
+
+		float volume = req.volume;
+		if (Vector3Length(req.position) > 0.001f) {
+			const float distance = Vector3Distance(camera.position, req.position);
+			const float attenuation = 1.0f / (1.0f + 0.002f * distance);
+			volume *= attenuation;
+		}
+
+		SetSoundVolume(it->second, std::clamp(volume, 0.0f, 1.0f));
+		PlaySound(it->second);
 	}
 	m_pendingRequests.clear();
 }

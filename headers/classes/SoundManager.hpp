@@ -33,6 +33,8 @@ public:
 	void playImmediate(sound::Id id, float volume = 1.0f);
 
 	sound::Id loadSound(const std::string& path);
+	void loadGlassSounds(const std::string& dir = "assets/sounds");
+	sound::Id getRandomGlassSound() const;
 
 	// Background music
 	void playMusic();
@@ -48,6 +50,7 @@ public:
 private:
 	std::map<sound::Id, Sound> m_sounds;
 	std::map<std::string, sound::Id> m_pathCache;
+	std::vector<sound::Id> m_glassSounds;
 	std::vector<sound::PlaySoundRequest> m_pendingRequests;
 
 	Music m_bgmStream{};

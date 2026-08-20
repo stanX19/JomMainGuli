@@ -1,5 +1,5 @@
 {
   "tileSize": 20.0,
-  "tileUnitHeight": 10.0,
+  "tileUnitHeight": 2.0,
   "holeRadiusRatio": 0.6
 }
