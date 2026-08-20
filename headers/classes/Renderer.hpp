@@ -24,6 +24,7 @@ private:
 	int m_lightPosLoc = 0;
 	int m_lightColorLoc = 0;
 	int m_cameraPosLoc = 0;
+	ModelId m_glassSphereModelId = 0;
 	Frustum m_currentFrustum;
 
 	void loadDefaultShader();
@@ -33,6 +34,7 @@ private:
 	void updateFrustum();
 	bool isEntityVisible(const component::Position &pos, const component::RenderBody &body) const;
 	void drawEntityModel(const component::Position &pos, const component::RenderBody &body);
+	void drawGlassShell(const component::Position &pos, const component::RenderBody &body);
 	void drawTrails();
 	void drawTrailBetween(const Vector3 &head, const Vector3 &tail, float rad, Color color) const;
 	void drawMap();

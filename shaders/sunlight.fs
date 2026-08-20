@@ -1,7 +1,7 @@
 #version 330
 
 in vec3 fragPosition;
-in vec2 fragTexCoord;
+in vec2 fragTexCord;
 in vec3 fragNormal;
 in vec3 fragLightDir;
 in vec4 fragColor;
@@ -20,16 +20,16 @@ vec3 getSurfaceNormal(vec3 geometricNormal) {
 
 	vec3 positionDx = dFdx(fragPosition);
 	vec3 positionDy = dFdy(fragPosition);
-	vec2 texcoordDx = dFdx(fragTexCoord);
-	vec2 texcoordDy = dFdy(fragTexCoord);
-	float determinant = texcoordDx.x * texcoordDy.y - texcoordDx.y * texcoordDy.x;
+	vec2 texcordDx = dFdx(fragTexCord);
+	vec2 texcordDy = dFdy(fragTexCord);
+	float determinant = texcordDx.x * texcordDy.y - texcordDx.y * texcordDy.x;
 	if (abs(determinant) < 0.000000000001)
 		return geometricNormal;
 
-	vec3 tangent = normalize(positionDx * texcoordDy.y - positionDy * texcoordDx.y);
+	vec3 tangent = normalize(positionDx * texcordDy.y - positionDy * texcordDx.y);
 	tangent = normalize(tangent - geometricNormal * dot(geometricNormal, tangent));
 	vec3 bitangent = normalize(cross(geometricNormal, tangent));
-	vec3 tangentNormal = texture(texture2, fragTexCoord).rgb * 2.0 - 1.0;
+	vec3 tangentNormal = texture(texture2, fragTexCord).rgb * 2.0 - 1.0;
 	return normalize(tangent * tangentNormal.x + bitangent * tangentNormal.y + geometricNormal * tangentNormal.z);
 }
 
@@ -37,7 +37,7 @@ void main() {
 	vec3 norm = getSurfaceNormal(normalize(fragNormal));
 	vec3 lightDir = normalize(fragLightDir);
 
-	vec4 texelColor = texture(texture0, fragTexCoord);
+	vec4 texelColor = texture(texture0, fragTexCord);
 
 	vec4 baseColor = texelColor * colDiffuse * fragColor;
 

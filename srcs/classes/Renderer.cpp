@@ -13,6 +13,7 @@ Renderer::Renderer(Camera3D &cam, GameContext &context)
 	loadShaderWithFallback();
 	loadGlassShader();
 	setupShaderUniforms();
+	m_glassSphereModelId = m_context.modelManager.createSphere(24, 24, 1.0f);
 }
 
 Renderer::~Renderer()
@@ -177,10 +178,32 @@ void Renderer::drawEntityModel(const Position &pos, const RenderBody &body)
 	DrawModelEx(model, position, axis, angle * RAD2DEG, body.scale, body.color);
 }
 
+void Renderer::drawGlassShell(const Position &pos, const RenderBody &body)
+{
+	if (!m_context.modelManager.isValid(m_glassSphereModelId))
+		return;
+
+	Model &glassModel = m_context.modelManager.getModel(m_glassSphereModelId);
+	const Shader activeShader = (m_glassShader.id != 0) ? m_glassShader : m_defaultShader;
+	for (int i = 0; i < glassModel.materialCount; i++) {
+		glassModel.materials[i].shader = activeShader;
+	}
+
+	constexpr Color CLASSICAL_GLASS_TINT = {215, 245, 240, 110};
+
+	Vector3 axis;
+	float angle;
+	QuaternionToAxisAngle(body.rotation, &axis, &angle);
+
+	const Vector3 position = pos.value + Vector3RotateByQuaternion(body.translation, body.rotation);
+	DrawModelEx(glassModel, position, axis, angle * RAD2DEG, body.scale, CLASSICAL_GLASS_TINT);
+}
+
 void Renderer::drawEntities()
 {
 	auto view = m_context.registry.view<Position, RenderBody>();
 
+	// Pass 1: Draw inner / opaque entity models with standard lighting
 	for (auto entity : view)
 	{
 		const Position &pos = view.get<Position>(entity);
@@ -191,14 +214,23 @@ void Renderer::drawEntities()
 		if (m_context.modelManager.isValid(body.modelID))
 		{
 			Model &model = m_context.modelManager.getModel(body.modelID);
-			const bool isGlass = m_context.registry.all_of<component::tags::Glass>(entity);
-			const Shader &chosenShader = isGlass ? m_glassShader : m_lightedShader;
-			const Shader activeShader = (chosenShader.id != 0) ? chosenShader : m_defaultShader;
-
+			const Shader activeShader = (m_lightedShader.id != 0) ? m_lightedShader : m_defaultShader;
 			for (int i = 0; i < model.materialCount; i++) {
 				model.materials[i].shader = activeShader;
 			}
 		}
 		drawEntityModel(pos, body);
+	}
+
+	// Pass 2: Draw outer glass shells on top for glass-encased entities
+	auto glassView = m_context.registry.view<Position, RenderBody, component::tags::IsCoveredByGlass>();
+	for (auto entity : glassView)
+	{
+		const Position &pos = glassView.get<Position>(entity);
+		const RenderBody &body = glassView.get<RenderBody>(entity);
+		if (!isEntityVisible(pos, body))
+			continue;
+
+		drawGlassShell(pos, body);
 	}
 }

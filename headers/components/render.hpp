@@ -4,7 +4,9 @@
 
 namespace component {
 	namespace tags {
-		struct Glass {};
+		struct IsCoveredByGlass {};
+		using isCoveredByGlass = IsCoveredByGlass;
+		using Glass = IsCoveredByGlass;
 	}
 
 	struct RenderBody {

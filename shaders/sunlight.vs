@@ -2,7 +2,7 @@
 
 in vec3 vertexPosition;
 in vec3 vertexNormal;
-in vec2 vertexTexCoord;  // This is essential for textured models
+in vec2 vertexTexCord;  // This is essential for textured models
 in vec4 vertexColor;
 
 uniform mat4 mvp;
@@ -13,7 +13,7 @@ uniform vec3 lightPosition;
 out vec3 fragNormal;
 out vec3 fragPosition;
 out vec3 fragLightDir;
-out vec2 fragTexCoord;   // Pass texture coordinates to fragment shader
+out vec2 fragTexCord;   // Pass texture coordinates to fragment shader
 out vec4 fragColor;
 
 void main() {
@@ -21,7 +21,7 @@ void main() {
     fragPosition = worldPos.xyz;
     
     fragNormal = mat3(matNormal) * vertexNormal;
-    fragTexCoord = vertexTexCoord;  // Pass through texture coordinates
+    fragTexCord = vertexTexCord;  // Pass through texture coordinates
     fragColor = vertexColor;
     
     gl_Position = mvp * vec4(vertexPosition, 1.0);

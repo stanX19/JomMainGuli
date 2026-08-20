@@ -14,16 +14,8 @@ namespace map {
 		Mesh generateMesh();
 		void generateAndAssignModel(ModelManager &modelManager);
 
-	private:
-		struct VertexData {
-			Vector3 pos;
-			Vector3 normal;
-			Color color;
-		};
-
-		struct Triangle {
-			VertexData v[3];
-		};
+		using Vertex = ModelManager::Vertex;
+		using Triangle = ModelManager::Triangle;
 
 		Map &m_map;
 		int m_width = 0;
@@ -60,7 +52,5 @@ namespace map {
 			float yTop,
 			Color color
 		);
-
-		Mesh buildRaylibMesh() const;
 	};
 } // namespace map

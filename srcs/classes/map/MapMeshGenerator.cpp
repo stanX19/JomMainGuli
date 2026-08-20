@@ -29,9 +29,9 @@ void map::MapMeshGenerator::addTriangle(
 	Color color
 ) {
 	m_triangles.push_back({
-		VertexData{v0, normal, color},
-		VertexData{v1, normal, color},
-		VertexData{v2, normal, color}
+		Vertex{v0, normal, color, {0.0f, 0.0f}},
+		Vertex{v1, normal, color, {0.0f, 0.0f}},
+		Vertex{v2, normal, color, {0.0f, 0.0f}}
 	});
 }
 
@@ -119,41 +119,6 @@ void map::MapMeshGenerator::addTileSides(
 	}
 }
 
-Mesh map::MapMeshGenerator::buildRaylibMesh() const {
-	Mesh mesh{};
-	const int triangleCount = static_cast<int>(m_triangles.size());
-	const int vertexCount = triangleCount * 3;
-	mesh.vertexCount = vertexCount;
-	mesh.triangleCount = triangleCount;
-
-	mesh.vertices = static_cast<float*>(MemAlloc(vertexCount * 3 * sizeof(float)));
-	mesh.normals = static_cast<float*>(MemAlloc(vertexCount * 3 * sizeof(float)));
-	mesh.colors = static_cast<unsigned char*>(MemAlloc(vertexCount * 4 * sizeof(unsigned char)));
-
-	int vIdx = 0;
-	for (const auto &tri : m_triangles) {
-		for (int i = 0; i < 3; ++i) {
-			const VertexData &vd = tri.v[i];
-			mesh.vertices[vIdx * 3 + 0] = vd.pos.x;
-			mesh.vertices[vIdx * 3 + 1] = vd.pos.y;
-			mesh.vertices[vIdx * 3 + 2] = vd.pos.z;
-
-			mesh.normals[vIdx * 3 + 0] = vd.normal.x;
-			mesh.normals[vIdx * 3 + 1] = vd.normal.y;
-			mesh.normals[vIdx * 3 + 2] = vd.normal.z;
-
-			mesh.colors[vIdx * 4 + 0] = vd.color.r;
-			mesh.colors[vIdx * 4 + 1] = vd.color.g;
-			mesh.colors[vIdx * 4 + 2] = vd.color.b;
-			mesh.colors[vIdx * 4 + 3] = vd.color.a;
-			++vIdx;
-		}
-	}
-
-	UploadMesh(&mesh, false);
-	return mesh;
-}
-
 Mesh map::MapMeshGenerator::generateMesh() {
 	if (m_width <= 0 || m_height <= 0) {
 		return Mesh{};
@@ -178,7 +143,7 @@ Mesh map::MapMeshGenerator::generateMesh() {
 		}
 	}
 
-	return buildRaylibMesh();
+	return ModelManager::generateMeshFromTriangles(m_triangles, false);
 }
 
 void map::MapMeshGenerator::generateAndAssignModel(ModelManager &modelManager) {

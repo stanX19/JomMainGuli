@@ -86,39 +86,30 @@ namespace {
 		return groups;
 	}
 
-	Color calculateGroupAverageColor(const entt::registry &registry, const std::vector<entt::entity> &entities) {
-		int totalR = 0;
-		int totalG = 0;
-		int totalB = 0;
-		int count = 0;
-
+	std::vector<Color> collectGroupColors(const entt::registry &registry, const std::vector<entt::entity> &entities) {
+		std::vector<Color> colors;
 		for (entt::entity member : entities) {
 			const auto *rb = registry.try_get<RenderBody>(member);
 			if (!rb)
 				continue;
-
-			totalR += rb->color.r;
-			totalG += rb->color.g;
-			totalB += rb->color.b;
-			count++;
+			colors.push_back(rb->color);
 		}
-
-		if (count == 0)
-			return WHITE;
-
-		return Color{
-			static_cast<unsigned char>(totalR / count),
-			static_cast<unsigned char>(totalG / count),
-			static_cast<unsigned char>(totalB / count),
-			255
-		};
+		if (colors.empty())
+			colors.push_back(WHITE);
+		return colors;
 	}
 
 	void finalizeGroupMerge(GameContext &context, const MergeGroup &group) {
-		const Color mergedColor = calculateGroupAverageColor(context.registry, group.entities);
-		entt::entity newGuliEnt = entity::spawnOrb(context, group.targetPos, mergedColor, 1.0f);
+		const std::vector<Color> groupColors = collectGroupColors(context.registry, group.entities);
+		const ModelId ribbonModelId = context.modelManager.createRibbon(groupColors);
+
+		entt::entity newGuliEnt = entity::spawnOrb(context, group.targetPos, WHITE, 1.0f);
+		if (auto *rb = context.registry.try_get<RenderBody>(newGuliEnt)) {
+			rb->modelID = ribbonModelId;
+		}
+
 		context.registry.emplace<tags::CollectibleGuli>(newGuliEnt);
-		context.registry.emplace<tags::Glass>(newGuliEnt);
+		context.registry.emplace<tags::IsCoveredByGlass>(newGuliEnt);
 		
 		for (entt::entity member : group.entities) {
 			context.registry.destroy(member);

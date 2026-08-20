@@ -14,11 +14,11 @@ entt::entity entity::spawnGuli(GameContext &context, Vector3 pos, float radius) 
 	context.registry.emplace<Mass>(guli, Mass{4.0f});
 	context.registry.emplace<VerticalGravity>(guli, VerticalGravity{1.0f});
 
-	const ModelId sphereModelId = context.modelManager.createSphere(16, 16, 1.0f);
-	context.registry.emplace<RenderBody>(guli, RenderBody{sphereModelId, WHITE, radius});
+	const ModelId ribbonModelId = context.modelManager.createRibbon({DARKGREEN, GOLD});
+	context.registry.emplace<RenderBody>(guli, RenderBody{ribbonModelId, WHITE, radius});
 	context.registry.emplace<CollisionBody>(guli, CollisionBody{radius});
 	context.registry.emplace<tags::GuliTarget>(guli);
-	context.registry.emplace<tags::Glass>(guli);
+	context.registry.emplace<tags::IsCoveredByGlass>(guli);
 
 	return guli;
 }
