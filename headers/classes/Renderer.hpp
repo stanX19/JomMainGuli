@@ -33,8 +33,8 @@ private:
 	void setupShaderUniforms();
 	void updateFrustum();
 	bool isEntityVisible(const component::Position &pos, const component::RenderBody &body) const;
-	void drawEntityModel(const component::Position &pos, const component::RenderBody &body);
-	void drawGlassShell(const component::Position &pos, const component::RenderBody &body);
+	void drawEntityModel(const component::Position &pos, const component::RenderBody &body, const Quaternion &entityRot = QuaternionIdentity());
+	void drawGlassShell(const component::Position &pos, const component::RenderBody &body, const Quaternion &entityRot = QuaternionIdentity());
 	void drawTrails();
 	void drawTrailBetween(const Vector3 &head, const Vector3 &tail, float rad, Color color) const;
 	void drawMap();

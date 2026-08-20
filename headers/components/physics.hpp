@@ -44,5 +44,6 @@ namespace component {
 
 	namespace tags {
 		struct zeroGravity {};
+		struct RollsOnFloor {};
 	}
 } // namespace component

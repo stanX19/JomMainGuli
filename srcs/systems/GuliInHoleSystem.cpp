@@ -40,7 +40,7 @@ namespace {
 	}
 
 	void processMergingParticles(GameContext &context, float dt) {
-		constexpr float MERGE_SPEED = 100.0f;
+		constexpr float MERGE_SPEED = 25.0f;
 		const float maxRadius = std::numeric_limits<float>::infinity();
 		const float step = MERGE_SPEED * dt;
 

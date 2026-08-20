@@ -3,6 +3,7 @@
 #include "map/MapCollider.hpp"
 #include "utils.hpp"
 #include "events.hpp"
+#include "constants.hpp"
 #include <algorithm>
 #include <cmath>
 
@@ -26,9 +27,27 @@ namespace {
 			volume
 		});
 	}
+
+	void applyRollingRotation(GameContext &context, entt::entity entity, const Vector3 &normal, const Vector3 &tangentVel, float radius, float dt) {
+		if (radius <= constants::epsilon || dt <= 0.0f || !context.registry.all_of<tags::RollsOnFloor>(entity))
+			return;
+
+		auto *rot = context.registry.try_get<Rotation>(entity);
+		if (!rot)
+			return;
+
+		const float speed = Vector3Length(tangentVel);
+		if (speed <= constants::epsilon)
+			return;
+
+		const Vector3 rollAxis = Vector3Normalize(Vector3CrossProduct(normal, tangentVel));
+		const float deltaAngle = (speed / radius) * dt;
+		const Quaternion deltaRot = QuaternionFromAxisAngle(rollAxis, deltaAngle);
+		rot->value = QuaternionNormalize(QuaternionMultiply(deltaRot, rot->value));
+	}
 }
 
-void systems::EntityWorldCollision::update(GameContext &context, [[maybe_unused]] float dt) {
+void systems::EntityWorldCollision::update(GameContext &context, float dt) {
 	const map::Map &map = context.map;
 	const float elasticity = context.config.physics.collisionElasticity;
 
@@ -45,11 +64,12 @@ void systems::EntityWorldCollision::update(GameContext &context, [[maybe_unused]
 		const float velAlongNormal = Vector3DotProduct(vel.value, *normal);
 		if (velAlongNormal >= 0.0f)
 			continue;
-
+		
 		const float e = (velAlongNormal > -2.0f) ? 0.0f : elasticity;
 		const Vector3 normalVel = *normal * velAlongNormal;
 		const Vector3 tangentVel = vel.value - normalVel;
 		vel.value = normalVel * -e + tangentVel * 0.95f;
+		applyRollingRotation(context, entity, *normal, tangentVel, body.radius, dt);
 
 		spawnCollisionSoundIfEligible(context, entity, pos.value, velAlongNormal);
 	}
