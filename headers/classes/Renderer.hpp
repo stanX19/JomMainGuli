@@ -18,14 +18,17 @@ private:
 	GameContext &m_context;
 	float m_currentDt = 0.0f;
 	Shader m_lightedShader;
+	Shader m_glassShader;
 	Shader m_defaultShader;
 
 	int m_lightPosLoc = 0;
 	int m_lightColorLoc = 0;
+	int m_cameraPosLoc = 0;
 	Frustum m_currentFrustum;
 
 	void loadDefaultShader();
 	void loadShaderWithFallback();
+	void loadGlassShader();
 	void setupShaderUniforms();
 	void updateFrustum();
 	bool isEntityVisible(const component::Position &pos, const component::RenderBody &body) const;

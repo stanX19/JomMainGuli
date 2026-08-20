@@ -3,6 +3,10 @@
 #include "ModelManager.hpp"
 
 namespace component {
+	namespace tags {
+		struct Glass {};
+	}
+
 	struct RenderBody {
 		ModelId modelID = 0;
 		Color color = WHITE;

@@ -118,6 +118,7 @@ namespace {
 		const Color mergedColor = calculateGroupAverageColor(context.registry, group.entities);
 		entt::entity newGuliEnt = entity::spawnOrb(context, group.targetPos, mergedColor, 1.0f);
 		context.registry.emplace<tags::CollectibleGuli>(newGuliEnt);
+		context.registry.emplace<tags::Glass>(newGuliEnt);
 		
 		for (entt::entity member : group.entities) {
 			context.registry.destroy(member);

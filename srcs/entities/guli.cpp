@@ -18,6 +18,7 @@ entt::entity entity::spawnGuli(GameContext &context, Vector3 pos, float radius) 
 	context.registry.emplace<RenderBody>(guli, RenderBody{sphereModelId, WHITE, radius});
 	context.registry.emplace<CollisionBody>(guli, CollisionBody{radius});
 	context.registry.emplace<tags::GuliTarget>(guli);
+	context.registry.emplace<tags::Glass>(guli);
 
 	return guli;
 }

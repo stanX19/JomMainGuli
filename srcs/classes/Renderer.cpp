@@ -11,6 +11,7 @@ Renderer::Renderer(Camera3D &cam, GameContext &context)
 {
 	loadDefaultShader();
 	loadShaderWithFallback();
+	loadGlassShader();
 	setupShaderUniforms();
 }
 
@@ -20,6 +21,11 @@ Renderer::~Renderer()
 	{
 		UnloadShader(m_lightedShader);
 		m_lightedShader = {0, nullptr};
+	}
+	if (m_glassShader.id != 0)
+	{
+		UnloadShader(m_glassShader);
+		m_glassShader = {0, nullptr};
 	}
 	if (m_defaultShader.id != 0)
 	{
@@ -45,6 +51,18 @@ void Renderer::loadShaderWithFallback()
 	}
 }
 
+void Renderer::loadGlassShader()
+{
+	m_glassShader = LoadShader("shaders/glass.vs", "shaders/glass.fs");
+
+	if (m_glassShader.id == 0)
+	{
+		TraceLog(LOG_WARNING, "Glass shader failed to load. Using default shader.");
+		UnloadShader(m_glassShader);
+		m_glassShader = LoadShader(nullptr, nullptr);
+	}
+}
+
 void Renderer::setupShaderUniforms()
 {
 	m_lightPosLoc = GetShaderLocation(m_lightedShader, "lightPosition");
@@ -55,6 +73,10 @@ void Renderer::setupShaderUniforms()
 
 	Vector3 lightColor = { 1.0f, 1.0f, 1.0f };
 	SetShaderValue(m_lightedShader, m_lightColorLoc, &lightColor, SHADER_UNIFORM_VEC3);
+
+	m_cameraPosLoc = GetShaderLocation(m_glassShader, "cameraPosition");
+	SetShaderValue(m_glassShader, GetShaderLocation(m_glassShader, "lightPosition"), &lightPos, SHADER_UNIFORM_VEC3);
+	SetShaderValue(m_glassShader, GetShaderLocation(m_glassShader, "lightColor"), &lightColor, SHADER_UNIFORM_VEC3);
 }
 
 void Renderer::updateFrustum()
@@ -78,6 +100,11 @@ void Renderer::render(float dt)
 {
 	m_currentDt = dt;
 	ClearBackground(BLACK);
+
+	if (m_glassShader.id != 0 && m_cameraPosLoc != -1)
+	{
+		SetShaderValue(m_glassShader, m_cameraPosLoc, &m_camera.position, SHADER_UNIFORM_VEC3);
+	}
 
 	BeginMode3D(m_camera);
 	updateFrustum();
@@ -164,8 +191,12 @@ void Renderer::drawEntities()
 		if (m_context.modelManager.isValid(body.modelID))
 		{
 			Model &model = m_context.modelManager.getModel(body.modelID);
+			const bool isGlass = m_context.registry.all_of<component::tags::Glass>(entity);
+			const Shader &chosenShader = isGlass ? m_glassShader : m_lightedShader;
+			const Shader activeShader = (chosenShader.id != 0) ? chosenShader : m_defaultShader;
+
 			for (int i = 0; i < model.materialCount; i++) {
-				model.materials[i].shader = (m_lightedShader.id != 0) ? m_lightedShader : m_defaultShader;
+				model.materials[i].shader = activeShader;
 			}
 		}
 		drawEntityModel(pos, body);
