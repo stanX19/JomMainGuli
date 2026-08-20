@@ -68,19 +68,19 @@ std::optional<Vector3> map::MapCollider::calculateSphereCollisionNormals(
 		// else, its inside the cell body already
 		// use prev pos to find out entering face
 		if (prevPos.y >= tile.selfHeight) {
-			// pos.y = tile.selfHeight + radius;
+			pos.y = tile.selfHeight + radius;
 			totalNormal += Vector3{0.0f, 1.0f, 0.0f};
 		} else if (prevPos.x <= tile.x1) {
-			// pos.x = tile.x1 - radius;
+			pos.x = tile.x1 - radius;
 			totalNormal += Vector3{-1.0f, 0.0f, 0.0f};
 		} else if (prevPos.x >= tile.x2) {
-			// pos.x = tile.x2 + radius;
+			pos.x = tile.x2 + radius;
 			totalNormal += Vector3{1.0f, 0.0f, 0.0f};
 		} else if (prevPos.z <= tile.z1) {
-			// pos.z = tile.z1 - radius;
+			pos.z = tile.z1 - radius;
 			totalNormal += Vector3{0.0f, 0.0f, -1.0f};
 		} else if (prevPos.z >= tile.z2) {
-			// pos.z = tile.z2 + radius;
+			pos.z = tile.z2 + radius;
 			totalNormal += Vector3{0.0f, 0.0f, 1.0f};
 		}
 	}
