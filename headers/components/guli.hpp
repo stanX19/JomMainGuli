@@ -24,4 +24,14 @@ namespace component {
 		entt::entity guliEntity = entt::null;
 		Vector3 targetPos = {0.0f, 0.0f, 0.0f};
 	};
+
+	struct GuliInventory {
+		std::vector<entt::entity> guliCollection;
+	};
+
+	struct GuliViewState {
+		size_t selectedIndex = 0;
+		entt::entity targetGuli = entt::null;
+	};
 } // namespace component
+

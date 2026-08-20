@@ -101,12 +101,14 @@ namespace {
 
 	void finalizeGroupMerge(GameContext &context, const MergeGroup &group) {
 		const std::vector<Color> groupColors = collectGroupColors(context.registry, group.entities);
-		entity::spawnCollectibleGuli(context, group.targetPos, groupColors, 1.0f);
+		const Vector3 spawnPos = Vector3Add(group.targetPos, Vector3{0.0f, 1.2f, 0.0f});
+		entity::spawnCollectibleGuli(context, spawnPos, groupColors, 1.0f);
 		
 		for (entt::entity member : group.entities) {
 			context.registry.destroy(member);
 		}
 	}
+
 
 	void processGroupMerging(GameContext &context) {
 		const auto groups = collectMergeGroups(context.registry);

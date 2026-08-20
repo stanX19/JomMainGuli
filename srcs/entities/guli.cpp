@@ -91,7 +91,8 @@ entt::entity entity::spawnCollectibleGuli(GameContext &context, Vector3 pos, con
 	context.registry.emplace<Rotation>(collectibleGuli, Rotation{QuaternionIdentity()});
 	context.registry.emplace<PrevRotation>(collectibleGuli, PrevRotation{QuaternionIdentity()});
 	context.registry.emplace<Mass>(collectibleGuli, Mass{4.0f});
-	context.registry.emplace<VerticalGravity>(collectibleGuli, VerticalGravity{1.0f});
+	context.registry.emplace<VerticalGravity>(collectibleGuli, VerticalGravity{0.0f});
+	context.registry.emplace<tags::zeroGravity>(collectibleGuli);
 
 	const std::vector<Color> uniqueColors = deduplicateColors(colors);
 	const auto heritageOpt = evaluateHeritageRecipe(uniqueColors);
@@ -114,6 +115,7 @@ entt::entity entity::spawnCollectibleGuli(GameContext &context, Vector3 pos, con
 	context.registry.emplace<tags::RollsOnFloor>(collectibleGuli);
 
 	return collectibleGuli;
+
 }
 
 entt::entity entity::spawnCollectibleGuli(GameContext &context, const std::vector<Color> &colors) {

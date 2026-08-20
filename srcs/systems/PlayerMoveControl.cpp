@@ -90,6 +90,9 @@ void systems::PlayerMoveControl::update(GameContext &context, float dt) {
 	if (!context.registry.valid(context.currentPlayer))
 		return;
 
+	if (context.registry.all_of<GuliViewState>(context.currentPlayer))
+		return;
+
 	auto [rotPtr, velPtr] = context.registry.try_get<Rotation, Velocity>(context.currentPlayer);
 	if (!rotPtr || !velPtr)
 		return;
@@ -98,3 +101,4 @@ void systems::PlayerMoveControl::update(GameContext &context, float dt) {
 	processMovement(*velPtr, *rotPtr, dt);
 	processJump(context, dt);
 }
+

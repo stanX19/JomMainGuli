@@ -73,4 +73,23 @@ void systems::EntityWorldCollision::update(GameContext &context, float dt) {
 
 		spawnCollisionSoundIfEligible(context, entity, pos.value, velAlongNormal);
 	}
+
+	// patching floor tunneling, to be removed
+	for (auto [entity, pos, body] : context.registry.view<Position, CollisionBody, tags::CollectibleGuli>().each()) {
+		try {
+			const auto gridCord = map.worldToGrid(pos.value);
+			if (map.isValidGrid(gridCord)) {
+				const float floorY = map.getTile(gridCord).selfHeight + body.radius;
+				if (pos.value.y < floorY) {
+					pos.value.y = floorY;
+					if (auto *vel = context.registry.try_get<Velocity>(entity)) {
+						vel->value.y = std::max(vel->value.y, 0.0f);
+					}
+				}
+			}
+		} catch (...) {
+
+		}
+	}
 }
+

@@ -114,9 +114,13 @@ void systems::PlayerMagicCast::update(GameContext &context, float dt) {
 	if (!context.registry.valid(context.currentPlayer))
 		return;
 
+	if (context.registry.all_of<GuliViewState>(context.currentPlayer))
+		return;
+
 	auto [posPtr, rotPtr, unitCamera] = context.registry.try_get<Position, Rotation, UnitCamera>(context.currentPlayer);
 	if (!posPtr || !rotPtr || !unitCamera)
 		return;
+
 
 	const Ray ray = GetScreenToWorldRay(GetMousePosition(), context.mainCamera);
 

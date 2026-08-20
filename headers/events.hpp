@@ -26,11 +26,19 @@ namespace event {
 		float volume = 1.0f;
 	};
 
+	struct CollectGuliEvent {
+		GameContext *context = nullptr;
+		entt::entity player = entt::null;
+		entt::entity guli = entt::null;
+	};
+
 	struct Listener {
 		void handleCollisionEvent(const CollisionEvent& evt);
 		void handleSoundEvent(const SoundEvent& evt);
+		void handleCollectGuliEvent(const CollectGuliEvent& evt);
 	};
 }
+
 
 namespace event::utils {
 	template<typename Event, auto MemberFunc>

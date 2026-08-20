@@ -29,7 +29,9 @@ entt::entity entity::spawnPlayer(GameContext &context, Vector3 pos) {
 	});
 
 	context.registry.emplace<UnitCamera>(player);
+	context.registry.emplace<GuliInventory>(player);
 
 	context.currentPlayer = player;
 	return player;
+
 }

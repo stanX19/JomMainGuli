@@ -92,9 +92,37 @@ namespace {
 			volume
 		});
 	}
+	void checkCollectGuli(const event::CollisionEvent &evt) {
+		if (!evt.context)
+			return;
+
+		const auto &registry = evt.context->registry;
+		if (!registry.valid(evt.context->currentPlayer))
+			return;
+
+		const entt::entity player = evt.context->currentPlayer;
+		entt::entity guli = entt::null;
+
+		if (evt.a.id == player && registry.valid(evt.b.id) && registry.all_of<tags::CollectibleGuli>(evt.b.id)) {
+			guli = evt.b.id;
+		} else if (evt.b.id == player && registry.valid(evt.a.id) && registry.all_of<tags::CollectibleGuli>(evt.a.id)) {
+			guli = evt.a.id;
+		}
+
+		if (guli == entt::null)
+			return;
+
+		evt.context->dispatcher.enqueue<event::CollectGuliEvent>(event::CollectGuliEvent{
+			evt.context,
+			player,
+			guli
+		});
+	}
 }
 
 void event::Listener::handleCollisionEvent(const CollisionEvent &evt) {
+	checkCollectGuli(evt);
 	applyCollisionPhysics(evt);
 	triggerCollisionSound(evt);
 }
+

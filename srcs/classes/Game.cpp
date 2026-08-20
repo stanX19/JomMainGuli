@@ -17,9 +17,15 @@ void Game::reset() {
 	m_context.registry.clear();
 	event::utils::hookAllListeners(m_context);
 
-	m_context.map = map::MapLoader::load(m_context.config, "assets/maps/level1.map");
+	m_context.map = map::MapLoader::load(m_context.config, "assets/maps/level2.map");
 	map::MapMeshGenerator(m_context.map).generateAndAssignModel(m_context.modelManager);
 	m_context.map.spawnAll(m_context);
+
+	const auto &initEntities = m_context.map.getInitialEntities();
+	const auto guliCount = std::count_if(initEntities.begin(), initEntities.end(), [](const auto &e) {
+		return e.type == map::EntityType::Guli;
+	});
+	m_totalGuliInMap = (guliCount > 0) ? static_cast<int>(guliCount) : 5;
 }
 
 EngineState Game::run() {
@@ -41,12 +47,14 @@ EngineState Game::run() {
 		m_context.soundManager.update(m_context.mainCamera);
 
 		m_cameraFollowPlayer.update(m_context, dt);
+		m_guliView.update(m_context, dt);
 		m_spawnTrailParticles.update(m_context, dt);
 		m_entityTransformation.update(m_context, dt);
 		m_entityLifetime.update(m_context, dt);
 
 		BeginDrawing();
 		m_renderer.render(dt);
+		m_hud.render(m_context, m_totalGuliInMap);
 		EndDrawing();
 
 		inputControls(dt, nextState);
@@ -58,6 +66,10 @@ EngineState Game::run() {
 
 void Game::inputControls([[maybe_unused]] float dt, EngineState &nextState) {
 	if (IsKeyPressed(KEY_ESCAPE)) {
+		if (m_context.registry.valid(m_context.currentPlayer) && m_context.registry.all_of<component::GuliViewState>(m_context.currentPlayer)) {
+			m_context.registry.remove<component::GuliViewState>(m_context.currentPlayer);
+			return;
+		}
 		nextState = EngineState::MENU;
 		return;
 	}
@@ -65,3 +77,4 @@ void Game::inputControls([[maybe_unused]] float dt, EngineState &nextState) {
 		reset();
 	}
 }
+

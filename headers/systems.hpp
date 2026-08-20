@@ -12,3 +12,4 @@
 #include "systems/EntityWorldCollision.hpp"
 #include "systems/SpawnTrailParticles.hpp"
 #include "systems/GuliInHoleSystem.hpp"
+#include "systems/GuliView.hpp"
