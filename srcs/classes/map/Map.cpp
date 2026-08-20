@@ -26,6 +26,17 @@ Color map::Map::getRaylibColor(ColorType type) {
 	}
 }
 
+map::ColorType map::Map::getColorType(Color type) {
+	if (ColorIsEqual(type, RED)) return ColorType::Red;
+	if (ColorIsEqual(type, GREEN)) return ColorType::Green;
+	if (ColorIsEqual(type, BLUE)) return ColorType::Blue;
+	if (ColorIsEqual(type, YELLOW)) return ColorType::Yellow;
+	if (ColorIsEqual(type, PURPLE)) return ColorType::Purple;
+	if (ColorIsEqual(type, ORANGE)) return ColorType::Orange;
+	if (ColorIsEqual(type, WHITE)) return ColorType::White;
+	return ColorType::None;
+}
+
 map::Map::Map() = default;
 
 void map::Map::init(int width, int height, float tileSize, float tileUnitHeight, float holeRadiusRatio) {

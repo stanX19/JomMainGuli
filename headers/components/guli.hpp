@@ -1,15 +1,23 @@
 #pragma once
 
 #include "includes.hpp"
+#include "map/MapTypes.hpp"
+#include <string>
 
 namespace component {
 	namespace tags {
 		struct GuliTarget {};
 		struct CollectibleGuli {};
+		struct IsSpecialGuli {};
 	}
+
+	struct Description {
+		std::string value;
+	};
 
 	struct ShotGuli {
 		Color color = WHITE;
+		map::ColorType colorType = map::ColorType::White;
 	};
 
 	struct MergingInHole {

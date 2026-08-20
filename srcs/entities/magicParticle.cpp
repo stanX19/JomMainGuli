@@ -17,7 +17,7 @@ entt::entity entity::spawnMagicParticle(GameContext &context, Vector3 pos, Color
 	const ModelId sphereModelId = context.modelManager.createSphere(16, 16, 1.0f);
 	context.registry.emplace<RenderBody>(particle, RenderBody{sphereModelId, color, radius});
 	context.registry.emplace<CollisionBody>(particle, CollisionBody{radius});
-	context.registry.emplace<ShotGuli>(particle, ShotGuli{color});
+	context.registry.emplace<ShotGuli>(particle, ShotGuli{color, map::Map::getColorType(color)});
 	context.registry.emplace<tags::GlassCollisionSound>(particle);
 
 	context.registry.emplace<SpawnsTrailParticles>(particle, SpawnsTrailParticles{

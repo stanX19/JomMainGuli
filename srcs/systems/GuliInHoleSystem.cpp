@@ -101,15 +101,7 @@ namespace {
 
 	void finalizeGroupMerge(GameContext &context, const MergeGroup &group) {
 		const std::vector<Color> groupColors = collectGroupColors(context.registry, group.entities);
-		const ModelId ribbonModelId = context.modelManager.createRibbon(groupColors);
-
-		entt::entity newGuliEnt = entity::spawnOrb(context, group.targetPos, WHITE, 1.0f);
-		if (auto *rb = context.registry.try_get<RenderBody>(newGuliEnt)) {
-			rb->modelID = ribbonModelId;
-		}
-
-		context.registry.emplace<tags::CollectibleGuli>(newGuliEnt);
-		context.registry.emplace<tags::IsCoveredByGlass>(newGuliEnt);
+		entity::spawnCollectibleGuli(context, group.targetPos, groupColors, 1.0f);
 		
 		for (entt::entity member : group.entities) {
 			context.registry.destroy(member);

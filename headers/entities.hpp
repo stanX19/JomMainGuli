@@ -10,4 +10,6 @@ namespace entity {
 	entt::entity spawnOrb(GameContext &context, Vector3 pos, Color color, float radius = 1.0f);
 	entt::entity spawnGuli(GameContext &context, Vector3 pos, float radius = 1.0f);
 	entt::entity spawnMagicParticle(GameContext &context, Vector3 pos, Color color, entt::entity target = entt::null, float radius = 0.4f);
+	entt::entity spawnCollectibleGuli(GameContext &context, Vector3 pos, const std::vector<Color> &colors, float radius = 1.0f);
+	entt::entity spawnCollectibleGuli(GameContext &context, const std::vector<Color> &colors);
 } // namespace entity
