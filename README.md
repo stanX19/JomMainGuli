@@ -66,7 +66,7 @@ Walk into the newly forged floating marble to bag it!
 
 * **Continuous Collision Detection (CCD)**: Fast-moving particles use an analytical quadratic sweep solver so they never phase through marbles between frames, no matter how fast they fly.
 * **Non-Slip Rolling Physics**: Voxel terrain normals calculate real rolling torque on the fly, so marbles roll naturally down slopes instead of just sliding.
-* **Dynamic Vortex Fields**: Sinking a marble in a hole triggers a real mathematical vortex that pulls loose particles directly into the center.
+* **Spiral Vortex Suction**: Sinking a marble in a hole creates an inward swirling vortex that pulls loose particles into the center like water down a drain.
 * **Dual-Pass Glass Shaders**: Custom GLSL shader with Fresnel rim glow on the outer glass sphere, encasing procedural ribbons or 3D badges inside.
 * **Screen-Space 3D UI**: Do you know your inventory is actually rendered in 3D space? We just draw box around it to create illusion it is 2D.
 * **Spatialized 3D Acoustics**: 24 unique glass clink audio samples, scaling volume dynamically based on impact speed and camera distance.
@@ -75,14 +75,28 @@ Walk into the newly forged floating marble to bag it!
 
 ## What We Built vs. Raylib
 
+We chose **Raylib 5.0** because it is a lightweight, non-intrusive C library that handles raw windowing, OpenGL context creation, input polling, and audio output from our own `main()` without imposing an engine editor or gameplay framework. All architecture, math, and game simulation were built from scratch:
+
 | Component | Provided by Raylib | Custom Built in this Project |
 |:---|:---|:---|
 | **Architecture** | Windowing & GL Context | ECS systems using EnTT, Event Bus Dispatcher, State Machine |
-| **Physics** | Simple distance/box checks | Continuous Collision Detection (CCD), Voxel Heightmap Normals, Non-Slip Rolling Physics, Dynamic Vortex Vector Fields |
+| **Physics** | Simple distance/box checks | Continuous Collision Detection (CCD), Voxel Heightmap Normals, Non-Slip Rolling Physics, Spiral Vortex Attraction |
 | **World & Mesh** | Basic mesh drawing | ASCII `.map` + `.color` parser, Procedural 3D Voxel Mesh Generator with baked colors and step walls |
 | **Graphics** | Shader loading boilerplate | Custom Dual-Pass Fresnel Glass Shader, Procedural Parametric Helix Ribbon Generator, 2D-to-3D Image Extruder |
 | **Camera & UI** | Raw 3D Camera struct | Smooth Follow Camera with exponential damping, Screen-Space to 3D Raycast Collection Bag Viewer |
 | **Audio** | Device output | Spatial 3D Audio Resolver, Normal-Velocity Volume Scaler, 24-sample glass impact selector |
+
+---
+
+## Where Week 1 Shows Up in This Code
+
+* **Const-Correctness**: Const member functions across all query methods (`Map::getTile() const`, `ModelManager::getModel() const`) and const references (`const T&`) for read-only parameters.
+* **Ownership & RAII**: Zero raw owning pointers. RAII wrappers manage OpenGL shaders, model buffers (`ModelManager::unloadAll()`), audio buffers (`SoundManager::shutdown()`), and window lifecycle (`Engine::~Engine()`).
+* **Class Design & ECS**: Clean separation between pure data structs (`namespace component`) and logic processors (`namespace systems`), with widget polymorphism (`IWidget` $\rightarrow$ `TextButtonWidget`).
+* **STL Containers**: `std::vector` for entity pools, `std::map`/`std::unordered_map` for procedural caching and merge grouping, `std::set` for color deduplication, and `std::optional` for fallible queries.
+* **Patterns**: **Flyweight** (`ModelManager` procedural model cache), **Observer / Event Bus** (`entt::dispatcher` handling collisions and sounds), and **Factory** (`entity::spawn*`).
+* **Algorithms**: Continuous Collision Detection quadratic sweep solver (`calculateCollisionInterval`), inward spiral vortex attraction (`calculateVortexAttractionVelocity`), and inverse-distance spatial color sampling.
+* **Tests**: Catch2 test suite with automated test archive (`libcodesfaires.a`) guarding core mechanics.
 
 ---
 
@@ -110,7 +124,8 @@ Walk into the newly forged floating marble to bag it!
 ### Prerequisites
 * `g++` (C++17 or C++20 support)
 * GNU `make`
-* Standard graphic libraries: OpenGL, `libX11`, `libpthread`, `libdl`, `librt`
+* Raylib 5.0 (automatically cloned & built if missing)
+* Standard libraries: OpenGL, `libX11`, `libpthread`, `libdl`, `librt`
 
 ### Commands
 
@@ -121,7 +136,10 @@ make run
 # 2. Build the executable only
 make all
 
-# 3. Rebuild from scratch
+# 3. Run automated tests
+make test
+
+# 4. Rebuild from scratch
 make re
 ```
 
