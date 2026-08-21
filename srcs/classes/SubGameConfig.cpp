@@ -38,3 +38,9 @@ Vector3 SubGameConfig::getVector3(const std::string& path, Vector3 defaultVal) c
 	if (!m_parentCfg) return defaultVal;
 	return m_parentCfg->getVector3(m_rootPath + "." + path, defaultVal);
 }
+
+Color SubGameConfig::getColor(const std::string& path, Color defaultVal) const {
+	if (!m_parentCfg) return defaultVal;
+	return m_parentCfg->getColor(m_rootPath + "." + path, defaultVal);
+}
+

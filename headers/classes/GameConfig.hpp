@@ -38,6 +38,7 @@ public:
 		const std::vector<std::string>& defaultVal
 	) const;
 	virtual Vector3 getVector3(const std::string& path, Vector3 defaultVal) const;
+	virtual Color getColor(const std::string& path, Color defaultVal) const;
 
 	void setFloat(const std::string& path, float value);
 	void setBool(const std::string& path, bool value);
@@ -54,6 +55,10 @@ public:
 	const nlohmann::json& getJson() const { return m_config; }
 	nlohmann::json getSection(const std::string& path) const;
 	SubGameConfig getSubConfig(const std::string& path) const;
+
+	struct Render {
+		Color glassTint = {55, 255, 205, 255};
+	} render;
 
 	struct Physics {
 		float collisionElasticity = 0.5f;

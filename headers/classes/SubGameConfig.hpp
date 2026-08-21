@@ -21,6 +21,7 @@ public:
 		const std::vector<std::string>& defaultVal
 	) const override;
 	Vector3 getVector3(const std::string& path, Vector3 defaultVal) const override;
+	Color getColor(const std::string& path, Color defaultVal) const override;
 
 private:
 	const GameConfig* m_parentCfg = nullptr;

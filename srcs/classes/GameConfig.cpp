@@ -77,6 +77,7 @@ void GameConfig::init(const std::vector<RootSource>& sources) {
 
 void GameConfig::initConstants() {
 	ARENA_SIZE = getFloat("game.arenaSize", 2000.0f);
+	render.glassTint = getColor("game.glassTint", Color{55, 255, 205, 255});
 
 	physics.collisionElasticity = getFloat("physics.collisionElasticity", 0.5f);
 	physics.maxAngularKick = getFloat("physics.maxAngularKick", 0.5f);
@@ -147,7 +148,7 @@ float GameConfig::getFloat(const std::string& path, float defaultVal) const {
 
 int GameConfig::getInt(const std::string& path, int defaultVal) const {
 	const nlohmann::json* node = navigatePath(path);
-	if (node == nullptr || !node->is_number())
+	if (node == nullptr || !node->is_number_integer())
 		return defaultVal;
 	return node->get<int>();
 }
@@ -176,12 +177,11 @@ std::vector<std::string> GameConfig::getStringArray(
 	const nlohmann::json* node = navigatePath(path);
 	if (node == nullptr || !node->is_array())
 		return defaultVal;
+
 	std::vector<std::string> result;
-	result.reserve(node->size());
-	for (const auto& value : *node) {
-		if (!value.is_string())
-			return defaultVal;
-		result.push_back(value.get<std::string>());
+	for (const auto& item : *node) {
+		if (item.is_string())
+			result.push_back(item.get<std::string>());
 	}
 	return result;
 }
@@ -198,6 +198,33 @@ Vector3 GameConfig::getVector3(
 		node->value("y", defaultVal.y),
 		node->value("z", defaultVal.z)
 	};
+}
+
+Color GameConfig::getColor(
+	const std::string& path,
+	Color defaultVal
+) const {
+	const nlohmann::json* node = navigatePath(path);
+	if (node == nullptr)
+		return defaultVal;
+
+	if (node->is_object()) {
+		return Color{
+			static_cast<unsigned char>(node->value("r", defaultVal.r)),
+			static_cast<unsigned char>(node->value("g", defaultVal.g)),
+			static_cast<unsigned char>(node->value("b", defaultVal.b)),
+			static_cast<unsigned char>(node->value("a", defaultVal.a))
+		};
+	}
+	if (node->is_array() && node->size() >= 3) {
+		return Color{
+			static_cast<unsigned char>((*node)[0].get<int>()),
+			static_cast<unsigned char>((*node)[1].get<int>()),
+			static_cast<unsigned char>((*node)[2].get<int>()),
+			static_cast<unsigned char>(node->size() > 3 ? (*node)[3].get<int>() : 255)
+		};
+	}
+	return defaultVal;
 }
 
 nlohmann::json GameConfig::getSection(const std::string& path) const {

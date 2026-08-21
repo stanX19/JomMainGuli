@@ -111,8 +111,8 @@ void Renderer::render(float dt)
 	updateFrustum();
 
 	drawMap();
-	drawEntities();
 	drawTrails();
+	drawEntities();
 
 	EndMode3D();
 }
@@ -190,7 +190,7 @@ void Renderer::drawGlassShell(const Position &pos, const RenderBody &body, const
 		glassModel.materials[i].shader = activeShader;
 	}
 
-	constexpr Color CLASSICAL_GLASS_TINT = {215, 245, 240, 110};
+	const Color glassTint = m_context.config.render.glassTint;
 
 	const Quaternion finalRot = QuaternionNormalize(QuaternionMultiply(entityRot, body.rotation));
 	Vector3 axis;
@@ -198,7 +198,7 @@ void Renderer::drawGlassShell(const Position &pos, const RenderBody &body, const
 	QuaternionToAxisAngle(finalRot, &axis, &angle);
 
 	const Vector3 position = pos.value + Vector3RotateByQuaternion(body.translation, finalRot);
-	DrawModelEx(glassModel, position, axis, angle * RAD2DEG, body.scale, CLASSICAL_GLASS_TINT);
+	DrawModelEx(glassModel, position, axis, angle * RAD2DEG, body.scale, glassTint);
 }
 
 void Renderer::drawEntities()
@@ -227,6 +227,7 @@ void Renderer::drawEntities()
 	}
 
 	// Pass 2: Draw outer glass shells on top for glass-encased entities
+	rlDisableDepthMask();
 	auto glassView = m_context.registry.view<Position, RenderBody, component::tags::IsCoveredByGlass>();
 	for (auto entity : glassView)
 	{
@@ -239,4 +240,5 @@ void Renderer::drawEntities()
 		const Quaternion entityRot = rot ? rot->value : QuaternionIdentity();
 		drawGlassShell(pos, body, entityRot);
 	}
+	rlEnableDepthMask();
 }
