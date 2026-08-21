@@ -78,7 +78,8 @@ namespace map {
 			const std::vector<CellCord> &holeCords,
 			float tileSize,
 			float tileUnitHeight,
-			float holeRadiusRatio
+			float holeRadiusRatio,
+			int smoothingHeightDiff
 		);
 	};
 } // namespace map

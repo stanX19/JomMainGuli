@@ -1,5 +1,6 @@
 #include "map/MapMeshGenerator.hpp"
 #include <vector>
+#include <array>
 
 namespace {
 	Color shadeColor(Color c, float factor) {
@@ -9,6 +10,62 @@ namespace {
 			static_cast<unsigned char>(c.b * factor),
 			c.a
 		};
+	}
+
+	struct SideConfig {
+		int dx;
+		int dy;
+		Vector3 normal;
+		float shade;
+		Vector3 topA;
+		Vector3 topB;
+		Vector3 bottomA;
+		Vector3 bottomB;
+	};
+
+	std::array<SideConfig, 4> getTileSideConfigs(const map::TileData &tile, float baseBottom) {
+		return {{
+			// North (z0 edge)
+			{
+				0, -1,
+				{0.0f, 0.0f, -1.0f},
+				0.85f,
+			    {tile.x2, tile.cornerY.x1z0, tile.z1},
+				{tile.x1, tile.cornerY.x0z0, tile.z1},
+				{tile.x2, baseBottom, tile.z1},
+				{tile.x1, baseBottom, tile.z1}
+			},
+			// South (z1 edge)
+			{
+				0, 1,
+				{0.0f, 0.0f, 1.0f},
+				0.85f,
+				{tile.x1, tile.cornerY.x0z1, tile.z2},
+				{tile.x2, tile.cornerY.x1z1, tile.z2},
+				{tile.x1, baseBottom, tile.z2},
+				{tile.x2, baseBottom, tile.z2}
+			},
+			// West (x0 edge)
+			{
+				-1, 0,
+				{-1.0f, 0.0f, 0.0f},
+				0.85f,
+				{tile.x1, tile.cornerY.x0z0, tile.z1},
+				{tile.x1, tile.cornerY.x0z1, tile.z2},
+				{tile.x1, baseBottom, tile.z1},
+				{tile.x1, baseBottom, tile.z2}
+			},
+			// East (x1 edge)
+			{
+				1, 0,
+				{1.0f, 0.0f, 0.0f},
+				0.85f,
+				{tile.x2, tile.cornerY.x1z1, tile.z2},
+				{tile.x2, tile.cornerY.x1z0, tile.z1},
+				{tile.x2, baseBottom, tile.z2},
+				{tile.x2, baseBottom, tile.z1}
+			}
+		}};
 	}
 }
 
@@ -50,16 +107,29 @@ void map::MapMeshGenerator::addRect(
 	addTriangle(v0, v2, v3, normal, color);
 }
 
+/*
+	v00---v10  
+	|  \ /  |    
+	|   c   |   
+	|  / \  | 
+	v01---v11
+
+	CCW rotation: v00 c v10; v01 c v00; v11 c v01; v10 c v11
+*/
 void map::MapMeshGenerator::addTileTop(
-	float x0, float x1, float z0, float z1,
-	float yTop,
+	const TileData &tile,
 	Color color
 ) {
-	const Vector3 top0 = {x0, yTop, z0};
-	const Vector3 top1 = {x0, yTop, z1};
-	const Vector3 top2 = {x1, yTop, z1};
-	const Vector3 top3 = {x1, yTop, z0};
-	addRect(top0, top1, top2, top3, Vector3{0.0f, 1.0f, 0.0f}, color);
+	const Vector3 v00 = {tile.x1, tile.cornerY.x0z0, tile.z1};
+	const Vector3 v10 = {tile.x2, tile.cornerY.x1z0, tile.z1};
+	const Vector3 v01 = {tile.x1, tile.cornerY.x0z1, tile.z2};
+	const Vector3 v11 = {tile.x2, tile.cornerY.x1z1, tile.z2};
+	const Vector3 c = {tile.xMid, tile.yMid, tile.zMid};
+
+	addTriangle(v00, c, v10, tile.normals.z0, color);
+	addTriangle(v01, c, v00, tile.normals.x0, color);
+	addTriangle(v11, c, v01, tile.normals.z1, color);
+	addTriangle(v10, c, v11, tile.normals.x1, color);
 }
 
 /* 
@@ -74,48 +144,42 @@ void map::MapMeshGenerator::addTileTop(
 */
 void map::MapMeshGenerator::addTileSides(
 	int x, int y,
-	float x0, float x1, float z0, float z1,
-	float yTop,
+	const TileData &tile,
 	Color color
 ) {
-	// North (y - 1): z0 face
-	const float northY = (y > 0) ? (m_map.getTile(x, y - 1).height * m_tileUnitHeight) : m_baseBottom;
-	if (yTop > northY) {
-		const Vector3 n0 = {x1, yTop, z0};
-		const Vector3 n1 = {x1, northY, z0};
-		const Vector3 n2 = {x0, northY, z0};
-		const Vector3 n3 = {x0, yTop, z0};
-		addRect(n0, n1, n2, n3, Vector3{0.0f, 0.0f, -1.0f}, shadeColor(color, 0.85f));
-	}
+	const auto sideConfigs = getTileSideConfigs(tile, m_baseBottom);
 
-	// South (y + 1): z1 face
-	const float southY = (y + 1 < m_height) ? (m_map.getTile(x, y + 1).height * m_tileUnitHeight) : m_baseBottom;
-	if (yTop > southY) {
-		const Vector3 s0 = {x0, yTop, z1};
-		const Vector3 s1 = {x0, southY, z1};
-		const Vector3 s2 = {x1, southY, z1};
-		const Vector3 s3 = {x1, yTop, z1};
-		addRect(s0, s1, s2, s3, Vector3{0.0f, 0.0f, 1.0f}, shadeColor(color, 0.85f));
-	}
+	for (std::size_t i = 0; i < sideConfigs.size(); ++i) {
+		const auto &side = sideConfigs[i];
+		const int nx = x + side.dx;
+		const int ny = y + side.dy;
 
-	// West (x - 1): x0 face
-	const float westY = (x > 0) ? (m_map.getTile(x - 1, y).height * m_tileUnitHeight) : m_baseBottom;
-	if (yTop > westY) {
-		const Vector3 w0 = {x0, yTop, z0};
-		const Vector3 w1 = {x0, westY, z0};
-		const Vector3 w2 = {x0, westY, z1};
-		const Vector3 w3 = {x0, yTop, z1};
-		addRect(w0, w1, w2, w3, Vector3{-1.0f, 0.0f, 0.0f}, shadeColor(color, 0.75f));
-	}
+		if (!m_map.isValidGrid(nx, ny)) {
+			addRect(side.topA, side.bottomA, side.bottomB, side.topB, side.normal, shadeColor(color, side.shade));
+			continue;
+		}
 
-	// East (x + 1): x1 face
-	const float eastY = (x + 1 < m_width) ? (m_map.getTile(x + 1, y).height * m_tileUnitHeight) : m_baseBottom;
-	if (yTop > eastY) {
-		const Vector3 e0 = {x1, yTop, z1};
-		const Vector3 e1 = {x1, eastY, z1};
-		const Vector3 e2 = {x1, eastY, z0};
-		const Vector3 e3 = {x1, yTop, z0};
-		addRect(e0, e1, e2, e3, Vector3{1.0f, 0.0f, 0.0f}, shadeColor(color, 0.75f));
+		const TileData &neighbor = m_map.getTile(nx, ny);
+		if (tile.height - neighbor.height < m_map.getSmoothingHeightDiff())
+			continue;
+
+		Vector3 bottomA = side.bottomA;
+		Vector3 bottomB = side.bottomB;
+		if (i == 0) {
+			bottomA.y = neighbor.cornerY.x1z1;
+			bottomB.y = neighbor.cornerY.x0z1;
+		} else if (i == 1) {
+			bottomA.y = neighbor.cornerY.x0z0;
+			bottomB.y = neighbor.cornerY.x1z0;
+		} else if (i == 2) {
+			bottomA.y = neighbor.cornerY.x1z0;
+			bottomB.y = neighbor.cornerY.x1z1;
+		} else {
+			bottomA.y = neighbor.cornerY.x0z1;
+			bottomB.y = neighbor.cornerY.x0z0;
+		}
+
+		addRect(side.topA, bottomA, bottomB, side.topB, side.normal, shadeColor(color, side.shade));
 	}
 }
 
@@ -132,14 +196,8 @@ Mesh map::MapMeshGenerator::generateMesh() {
 			const TileData &tile = m_map.getTile(x, y);
 			const Color tileColor = ColorLerp(GRAY, Map::getRaylibColor(tile.color), 0.25);
 
-			const float x0 = x * m_tileSize - m_halfWidth;
-			const float x1 = (x + 1) * m_tileSize - m_halfWidth;
-			const float z0 = y * m_tileSize - m_halfHeight;
-			const float z1 = (y + 1) * m_tileSize - m_halfHeight;
-			const float yTop = tile.height * m_tileUnitHeight;
-
-			addTileTop(x0, x1, z0, z1, yTop, tileColor);
-			addTileSides(x, y, x0, x1, z0, z1, yTop, tileColor);
+			addTileTop(tile, tileColor);
+			addTileSides(x, y, tile, tileColor);
 		}
 	}
 

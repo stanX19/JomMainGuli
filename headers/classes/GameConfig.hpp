@@ -75,6 +75,7 @@ public:
 		float tileSize = 50.0f;
 		float tileUnitHeight = 20.0f;
 		float holeRadiusRatio = 0.6f;
+		int smoothingHeightDiff = 2;
 	} map;
 
 	struct Settings {

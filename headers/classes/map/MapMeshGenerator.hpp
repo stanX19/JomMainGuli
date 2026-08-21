@@ -41,15 +41,13 @@ namespace map {
 		);
 
 		void addTileTop(
-			float x0, float x1, float z0, float z1,
-			float yTop,
+			const TileData &tile,
 			Color color
 		);
 
 		void addTileSides(
 			int x, int y,
-			float x0, float x1, float z0, float z1,
-			float yTop,
+			const TileData &tile,
 			Color color
 		);
 	};

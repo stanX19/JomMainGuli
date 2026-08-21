@@ -93,6 +93,7 @@ void GameConfig::initConstants() {
 	map.tileSize = getFloat("map.tileSize", 50.0f);
 	map.tileUnitHeight = getFloat("map.tileUnitHeight", 20.0f);
 	map.holeRadiusRatio = getFloat("map.holeRadiusRatio", 0.6f);
+	map.smoothingHeightDiff = getInt("map.smoothingHeightDiff", 2);
 
 	settings.masterVolume = getFloat("audio.masterVolume", 0.5f);
 	settings.controlSensitivity = Clamp(

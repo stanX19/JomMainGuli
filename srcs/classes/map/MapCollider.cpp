@@ -24,10 +24,15 @@ std::vector<map::TileCollisionData> map::MapCollider::collideTilesInRange(
 	for (int y = startY; y <= endY; ++y) {
 		for (int x = startX; x <= endX; ++x) {
 			const TileData &tile = map.getTile(x, y);
+			const float clampedX = std::clamp(pos.x, tile.x1, tile.x2);
+			const float clampedZ = std::clamp(pos.z, tile.z1, tile.z2);
+
+			Vector3 normal;
+			const float groundY = map.getGroundY(Vector3{clampedX, pos.y, clampedZ}, &normal);
 			const Vector3 closestPoint = {
-				std::clamp(pos.x, tile.x1, tile.x2),
-				std::clamp(pos.y, -100.0f, tile.selfHeight),
-				std::clamp(pos.z, tile.z1, tile.z2)
+				clampedX,
+				std::clamp(pos.y, -100.0f, groundY),
+				clampedZ
 			};
 
 			if (Vector3LengthSqr(pos - closestPoint) < radius * radius) {
@@ -64,12 +69,14 @@ std::optional<Vector3> map::MapCollider::calculateSphereCollisionNormals(
 			totalNormal += normal;
 			continue;
 		}
-
 		// else, its inside the cell body already
 		// use prev pos to find out entering face
-		if (prevPos.y >= tile.selfHeight) {
-			pos.y = tile.selfHeight + radius;
-			totalNormal += Vector3{0.0f, 1.0f, 0.0f};
+		Vector3 groundNormal;
+		const float groundY = map.getGroundY(pos, &groundNormal);
+
+		if (prevPos.y >= groundY) {
+			pos.y = groundY + radius;
+			totalNormal += groundNormal;
 		} else if (prevPos.x <= tile.x1) {
 			pos.x = tile.x1 - radius;
 			totalNormal += Vector3{-1.0f, 0.0f, 0.0f};

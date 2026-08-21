@@ -37,23 +37,48 @@ namespace map {
 		}
 	};
 
+	struct CornerY {
+		float x0z0 = 0.0f;
+		float x1z0 = 0.0f;
+		float x0z1 = 0.0f;
+		float x1z1 = 0.0f;
+	};
+
+	struct TriangleNormals {
+		Vector3 z0 = {0.0f, 1.0f, 0.0f}; // Triangle at -Z
+		Vector3 z1 = {0.0f, 1.0f, 0.0f}; // Triangle at +Z
+		Vector3 x0 = {0.0f, 1.0f, 0.0f}; // Triangle at -X
+		Vector3 x1 = {0.0f, 1.0f, 0.0f}; // Triangle at +X
+	};
+
 	struct TileData {
+		CellCord cord = {0, 0};
 		int height = 0;
 		ColorType color = ColorType::None;
 
+		// world cords
 		float x1 = 0.0f;
 		float z1 = 0.0f;
 		float x2 = 0.0f;
 		float z2 = 0.0f;
 
+		// center in world cords
+		float xMid = 0.0f;
+		float zMid = 0.0f;
+		float yMid = 0.0f;
+
+		// neighbors height
 		float selfHeight = 0.0f;
 		float upHeight = 0.0f;
 		float downHeight = 0.0f;
 		float leftHeight = 0.0f;
 		float rightHeight = 0.0f;
 
+		CornerY cornerY;
+		TriangleNormals normals;
+
 		bool operator==(const TileData &other) const {
-			return (x1 == other.x1 && z1 == other.z1);
+			return cord == other.cord;
 		}
 	};
 

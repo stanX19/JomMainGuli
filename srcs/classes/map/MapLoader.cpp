@@ -273,12 +273,13 @@ void map::MapLoader::populateMap(
 	const std::vector<CellCord> &holeCords,
 	float tileSize,
 	float tileUnitHeight,
-	float holeRadiusRatio
+	float holeRadiusRatio,
+	int smoothingHeightDiff
 ) {
 	const int height = static_cast<int>(heightGrid.size());
 	const int width = height > 0 ? static_cast<int>(heightGrid[0].size()) : 0;
 
-	map.init(width, height, tileSize, tileUnitHeight, holeRadiusRatio);
+	map.init(width, height, tileSize, tileUnitHeight, holeRadiusRatio, smoothingHeightDiff);
 	map.setHoleCords(holeCords);
 
 	for (int y = 0; y < height; ++y) {
@@ -321,7 +322,8 @@ map::Map map::MapLoader::load(const GameConfig &config, const std::string &mapPa
 	Map mapResult;
 	populateMap(
 		mapResult, heightGrid, colorLines, entities, holeCords,
-		config.map.tileSize, config.map.tileUnitHeight, config.map.holeRadiusRatio
+		config.map.tileSize, config.map.tileUnitHeight, config.map.holeRadiusRatio,
+		config.map.smoothingHeightDiff
 	);
 	return mapResult;
 }

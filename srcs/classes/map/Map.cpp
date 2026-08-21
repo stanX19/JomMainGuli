@@ -1,4 +1,5 @@
 #include "constants.hpp"
+#include "utils.hpp"
 #include "map/Map.hpp"
 #include "GameContext.hpp"
 #include "entities.hpp"
@@ -39,12 +40,13 @@ map::ColorType map::Map::getColorType(Color type) {
 
 map::Map::Map() = default;
 
-void map::Map::init(int width, int height, float tileSize, float tileUnitHeight, float holeRadiusRatio) {
+void map::Map::init(int width, int height, float tileSize, float tileUnitHeight, float holeRadiusRatio, int smoothingHeightDiff) {
 	m_width = width;
 	m_height = height;
 	m_tileSize = tileSize;
 	m_tileUnitHeight = tileUnitHeight;
 	m_holeRadiusRatio = holeRadiusRatio;
+	m_smoothingHeightDiff = smoothingHeightDiff;
 	m_grid.assign(height, std::vector<TileData>(width, TileData{}));
 	m_initialEntities.clear();
 	m_holeCords.clear();
@@ -137,6 +139,77 @@ Vector3 map::Map::getHoleCenter(CellCord cell) const {
 	return gridToWorld(cell);
 }
 
+float map::Map::computeCornerForTile(int tx, int ty, int cx, int cz) const {
+	const int selfH = m_grid[ty][tx].height;
+	float totalH = 0.0f;
+	int count = 0;
+
+	const int dx[4] = {-1, 0, -1, 0};
+	const int dy[4] = {-1, -1, 0, 0};
+
+	for (int i = 0; i < 4; ++i) {
+		const int sx = cx + dx[i];
+		const int sy = cz + dy[i];
+		if (!isValidGrid(sx, sy))
+			continue;
+
+		const int nH = m_grid[sy][sx].height;
+		if (std::abs(nH - selfH) < m_smoothingHeightDiff) {
+			totalH += static_cast<float>(nH);
+			count++;
+		}
+	}
+
+	if (count == 0)
+		return static_cast<float>(selfH) * m_tileUnitHeight;
+
+	return (totalH / static_cast<float>(count)) * m_tileUnitHeight;
+}
+
+float map::Map::getGroundY(Vector3 worldPos, Vector3 *outNormal) const {
+	if (m_width <= 0 || m_height <= 0) {
+		if (outNormal) *outNormal = utils::math::getUpVector();
+		return 0.0f;
+	}
+
+	const CellCord cord = worldToGrid(worldPos);
+	if (!isValidGrid(cord)) {
+		if (outNormal) *outNormal = utils::math::getUpVector();
+		return 0.0f;
+	}
+
+	const TileData &tile = getTile(cord);
+	const float dx = worldPos.x - tile.xMid;
+	const float dz = worldPos.z - tile.zMid;
+
+	Vector3 n = utils::math::getUpVector();
+	Vector3 p0 = {tile.x1, tile.cornerY.x0z0, tile.z1};
+
+	// formula visualisation: https://www.desmos.com/calculator/4wdhihismu
+	if (std::abs(dx) <= -dz) {
+		n = tile.normals.z0;
+		p0 = {tile.x1, tile.cornerY.x0z0, tile.z1};
+	} else if (std::abs(dx) <= dz) {
+		n = tile.normals.z1;
+		p0 = {tile.x2, tile.cornerY.x1z1, tile.z2};
+	} else if (std::abs(dz) <= -dx) {
+		n = tile.normals.x0;
+		p0 = {tile.x1, tile.cornerY.x0z1, tile.z2};
+	} else {
+		n = tile.normals.x1;
+		p0 = {tile.x2, tile.cornerY.x1z0, tile.z1};
+	}
+
+	if (outNormal)
+		*outNormal = n;
+
+	if (std::abs(n.y) > constants::epsilon) {
+		return p0.y - (n.x * (worldPos.x - p0.x) + n.z * (worldPos.z - p0.z)) / n.y;
+	}
+
+	return tile.selfHeight;
+}
+
 void map::Map::populateTileBounds() {
 	if (m_width <= 0 || m_height <= 0)
 		return;
@@ -148,16 +221,38 @@ void map::Map::populateTileBounds() {
 	for (int y = 0; y < m_height; ++y) {
 		for (int x = 0; x < m_width; ++x) {
 			TileData &tile = m_grid[y][x];
+			tile.cord = CellCord{x, y};
 			tile.x1 = x * m_tileSize - halfWidth;
 			tile.x2 = (x + 1) * m_tileSize - halfWidth;
 			tile.z1 = y * m_tileSize - halfHeight;
 			tile.z2 = (y + 1) * m_tileSize - halfHeight;
 
-			tile.selfHeight = tile.height * m_tileUnitHeight;
-			tile.upHeight = (y > 0) ? (m_grid[y - 1][x].height * m_tileUnitHeight) : baseBottom;
-			tile.downHeight = (y + 1 < m_height) ? (m_grid[y + 1][x].height * m_tileUnitHeight) : baseBottom;
-			tile.leftHeight = (x > 0) ? (m_grid[y][x - 1].height * m_tileUnitHeight) : baseBottom;
-			tile.rightHeight = (x + 1 < m_width) ? (m_grid[y][x + 1].height * m_tileUnitHeight) : baseBottom;
+			tile.xMid = (tile.x1 + tile.x2) * 0.5f;
+			tile.zMid = (tile.z1 + tile.z2) * 0.5f;
+
+			tile.selfHeight = static_cast<float>(tile.height) * m_tileUnitHeight;
+			tile.upHeight = (y > 0) ? (static_cast<float>(m_grid[y - 1][x].height) * m_tileUnitHeight) : baseBottom;
+			tile.downHeight = (y + 1 < m_height) ? (static_cast<float>(m_grid[y + 1][x].height) * m_tileUnitHeight) : baseBottom;
+			tile.leftHeight = (x > 0) ? (static_cast<float>(m_grid[y][x - 1].height) * m_tileUnitHeight) : baseBottom;
+			tile.rightHeight = (x + 1 < m_width) ? (static_cast<float>(m_grid[y][x + 1].height) * m_tileUnitHeight) : baseBottom;
+
+			tile.cornerY.x0z0 = computeCornerForTile(x, y, x, y);
+			tile.cornerY.x1z0 = computeCornerForTile(x, y, x + 1, y);
+			tile.cornerY.x0z1 = computeCornerForTile(x, y, x, y + 1);
+			tile.cornerY.x1z1 = computeCornerForTile(x, y, x + 1, y + 1);
+
+			tile.yMid = (tile.cornerY.x0z0 + tile.cornerY.x1z0 + tile.cornerY.x0z1 + tile.cornerY.x1z1) * 0.25f;
+			const Vector3 c = {tile.xMid, tile.yMid, tile.zMid};
+
+			const Vector3 v00 = {tile.x1, tile.cornerY.x0z0, tile.z1};
+			const Vector3 v10 = {tile.x2, tile.cornerY.x1z0, tile.z1};
+			const Vector3 v01 = {tile.x1, tile.cornerY.x0z1, tile.z2};
+			const Vector3 v11 = {tile.x2, tile.cornerY.x1z1, tile.z2};
+
+			tile.normals.z0 = Vector3Normalize(Vector3CrossProduct(c - v00, v10 - v00));
+			tile.normals.z1 = Vector3Normalize(Vector3CrossProduct(c - v11, v01 - v11));
+			tile.normals.x0 = Vector3Normalize(Vector3CrossProduct(c - v01, v00 - v01));
+			tile.normals.x1 = Vector3Normalize(Vector3CrossProduct(c - v10, v11 - v10));
 		}
 	}
 }

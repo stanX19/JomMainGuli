@@ -32,6 +32,7 @@ namespace map {
 		int getHeight() const { return m_height; }
 		float getTileSize() const { return m_tileSize; }
 		float getTileUnitHeight() const { return m_tileUnitHeight; }
+		int getSmoothingHeightDiff() const { return m_smoothingHeightDiff; }
 
 		std::optional<ModelId> getModelId() const { return m_modelId; }
 		const std::vector<CellCord>& getHoleCords() const { return m_holeCords; }
@@ -46,18 +47,20 @@ namespace map {
 		void spawnAll(GameContext &context) const;
 		Vector3 gridToWorld(int x, int y) const;
 		Vector3 gridToWorld(CellCord cellCords) const;
+		float getGroundY(Vector3 worldPos, Vector3 *outNormal = nullptr) const;
 
 	private:
 		friend class MapLoader;
 		friend class MapMeshGenerator;
 
-		void init(int width, int height, float tileSize, float tileUnitHeight, float holeRadiusRatio = 0.6f);
+		void init(int width, int height, float tileSize, float tileUnitHeight, float holeRadiusRatio = 0.6f, int smoothingHeightDiff = 2);
 		void setTile(int x, int y, const TileData &tile);
 		void addInitialEntity(const InitialEntity &entity);
 		void setHoleCords(const std::vector<CellCord> &cords) { m_holeCords = cords; }
 		void addHoleCord(CellCord cord) { m_holeCords.push_back(cord); }
 		void setModelId(ModelId id) { m_modelId = id; }
 		void populateTileBounds();
+		float computeCornerForTile(int tx, int ty, int cx, int cz) const;
 		void clear();
 
 		int m_width = 0;
@@ -65,6 +68,7 @@ namespace map {
 		float m_tileSize = 2.0f;
 		float m_tileUnitHeight = 1.0f;
 		float m_holeRadiusRatio = 0.6f;
+		int m_smoothingHeightDiff = 2;
 		std::vector<std::vector<TileData>> m_grid;
 		std::vector<InitialEntity> m_initialEntities;
 		std::vector<CellCord> m_holeCords;
