@@ -19,6 +19,12 @@ namespace map {
 			Vector3 &pos,
 			float radius
 		);
+		static std::vector<TileCollisionData> collideTilesInRange(
+			const Map &map,
+			const Vector3 &pos,
+			const Vector3 &prevPos,
+			float radius
+		);
 		// cell, collision coordinate
 		static std::vector<TileCollisionData> collideTilesInRange(
 			const Map &map,

@@ -6,15 +6,16 @@
 
 std::vector<map::TileCollisionData> map::MapCollider::collideTilesInRange(
 	const Map &map,
-	Vector3 &pos,
+	const Vector3 &pos,
+	const Vector3 &prevPos,
 	float radius
 ) {
 	std::vector<map::TileCollisionData> result;
 	if (map.getWidth() <= 0 || map.getHeight() <= 0 || radius <= 0.0f)
 		return result;
 
-	const CellCord minCord = map.worldToGrid(Vector3{pos.x - radius, 0.0f, pos.z - radius});
-	const CellCord maxCord = map.worldToGrid(Vector3{pos.x + radius, 0.0f, pos.z + radius});
+	const CellCord minCord = map.worldToGrid(Vector3{std::min(pos.x, prevPos.x) - radius, 0.0f, std::min(pos.z, prevPos.z) - radius});
+	const CellCord maxCord = map.worldToGrid(Vector3{std::max(pos.x, prevPos.x) + radius, 0.0f, std::max(pos.z, prevPos.z) + radius});
 
 	const int startX = std::max(0, minCord.x);
 	const int endX = std::min(map.getWidth() - 1, maxCord.x);
@@ -44,6 +45,14 @@ std::vector<map::TileCollisionData> map::MapCollider::collideTilesInRange(
 	return result;
 }
 
+std::vector<map::TileCollisionData> map::MapCollider::collideTilesInRange(
+	const Map &map,
+	Vector3 &pos,
+	float radius
+) {
+	return collideTilesInRange(map, pos, pos, radius);
+}
+
 std::optional<Vector3> map::MapCollider::calculateSphereCollisionNormals(
 	const Map &map,
 	Vector3 &pos,
@@ -53,7 +62,7 @@ std::optional<Vector3> map::MapCollider::calculateSphereCollisionNormals(
 	if (map.getWidth() <= 0 || map.getHeight() <= 0 || radius <= 0.0f)
 		return std::nullopt;
 
-	const std::vector<map::TileCollisionData> collidedTiles = collideTilesInRange(map, pos, radius);
+	const std::vector<map::TileCollisionData> collidedTiles = collideTilesInRange(map, pos, prevPos, radius);
 	if (collidedTiles.empty())
 		return std::nullopt;
 
@@ -70,26 +79,28 @@ std::optional<Vector3> map::MapCollider::calculateSphereCollisionNormals(
 			continue;
 		}
 		// else, its inside the cell body already
-		// use prev pos to find out entering face
 		Vector3 groundNormal;
 		const float groundY = map.getGroundY(pos, &groundNormal);
 
-		if (prevPos.y >= groundY) {
-			pos.y = groundY + radius;
-			totalNormal += groundNormal;
-		} else if (prevPos.x <= tile.x1) {
-			pos.x = tile.x1 - radius;
-			totalNormal += Vector3{-1.0f, 0.0f, 0.0f};
-		} else if (prevPos.x >= tile.x2) {
-			pos.x = tile.x2 + radius;
-			totalNormal += Vector3{1.0f, 0.0f, 0.0f};
-		} else if (prevPos.z <= tile.z1) {
-			pos.z = tile.z1 - radius;
-			totalNormal += Vector3{0.0f, 0.0f, -1.0f};
-		} else if (prevPos.z >= tile.z2) {
-			pos.z = tile.z2 + radius;
-			totalNormal += Vector3{0.0f, 0.0f, 1.0f};
-		}
+		const struct FaceCandidate {
+			float dist;
+			Vector3 normal;
+			Vector3 newPos;
+		} faces[5] = {
+			{groundY - pos.y, groundNormal,                Vector3{pos.x, groundY + radius, pos.z}},
+			{pos.x - tile.x1, Vector3{-1.0f, 0.0f,  0.0f}, Vector3{tile.x1 - radius, pos.y, pos.z}},
+			{tile.x2 - pos.x, Vector3{ 1.0f, 0.0f,  0.0f}, Vector3{tile.x2 + radius, pos.y, pos.z}},
+			{pos.z - tile.z1, Vector3{ 0.0f, 0.0f, -1.0f}, Vector3{pos.x, pos.y, tile.z1 - radius}},
+			{tile.z2 - pos.z, Vector3{ 0.0f, 0.0f,  1.0f}, Vector3{pos.x, pos.y, tile.z2 + radius}},
+		};
+
+		const auto &closest = *std::min_element(
+			std::begin(faces), std::end(faces),
+			[](const FaceCandidate &a, const FaceCandidate &b) { return a.dist < b.dist; }
+		);
+
+		pos = closest.newPos;
+		totalNormal += closest.normal;
 	}
 
 	if (Vector3LengthSqr(totalNormal) > constants::epsilon)
