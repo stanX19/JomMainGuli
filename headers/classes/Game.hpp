@@ -19,7 +19,6 @@ private:
 	GameContext &m_context;
 	Renderer m_renderer;
 	ui::GameHUD m_hud;
-	int m_totalGuliInMap = 5;
 
 	systems::PlayerMoveControl m_playerMoveControl;
 	systems::PlayerMagicCast m_playerMagicCast;
@@ -33,6 +32,7 @@ private:
 	systems::EntityLifetime m_entityLifetime;
 	systems::GuliInHoleSystem m_guliInHoleSystem;
 	systems::GuliView m_guliView;
+	systems::GameStateSystem m_gameStateSystem;
 
 	void inputControls([[maybe_unused]] float dt, EngineState &nextState);
 };

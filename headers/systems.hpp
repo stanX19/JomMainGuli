@@ -13,3 +13,4 @@
 #include "systems/SpawnTrailParticles.hpp"
 #include "systems/GuliInHoleSystem.hpp"
 #include "systems/GuliView.hpp"
+#include "systems/GameStateSystem.hpp"

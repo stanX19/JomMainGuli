@@ -2,47 +2,115 @@
 #include "GameContext.hpp"
 #include "components.hpp"
 #include <algorithm>
+#include <fstream>
+#include <sstream>
 #include <string>
+#include <vector>
 
 using namespace component;
 
 Vector2 ui::GameHUD::getSlotPreviewCenter(size_t index, int screenWidth) {
 	const float socketSize = getSlotSize();
-	const float socketX = static_cast<float>(screenWidth) - socketSize;
+	const float socketX = static_cast<float>(screenWidth) - socketSize - 20.0f;
 	const float socketY = 20.0f + static_cast<float>(index) * getSlotSpacing();
 	return Vector2{socketX + socketSize * 0.5f, socketY + socketSize * 0.5f};
 }
 
-void ui::GameHUD::renderTopLeftHUD(size_t collectedCount, int winTarget) {
-	const float panelWidth = std::max(400.0f, 60.0f + static_cast<float>(winTarget) * 60.0f);
-	const float panelHeight = 115.0f;
-	const Rectangle panelRect = {15.0f, 15.0f, panelWidth, panelHeight};
+void ui::GameHUD::renderTrapezoidClock(const GameContext &context) {
+	const int screenWidth = GetScreenWidth();
+	const float cx = static_cast<float>(screenWidth) * 0.5f;
+	const float topHalfW = 140.0f;
+	const float botHalfW = 105.0f;
+	const float clockHeight = 56.0f;
 
-	DrawRectangleRounded(panelRect, 0.12f, 4, palette::BG_PANEL);
-	DrawRectangleRoundedLines(panelRect, 0.12f, 4, palette::BORDER_DEFAULT);
+	const Vector2 vTopLeft = {cx - topHalfW, 0.0f};
+	const Vector2 vTopRight = {cx + topHalfW, 0.0f};
+	const Vector2 vBotRight = {cx + botHalfW, clockHeight};
+	const Vector2 vBotLeft = {cx - botHalfW, clockHeight};
 
-	DrawText("Jom Main Guli", 28, 24, 22, palette::TEXT_GOLD);
+	DrawTriangle(vTopLeft, vBotLeft, vTopRight, palette::BG_PANEL);
+	DrawTriangle(vTopRight, vBotLeft, vBotRight, palette::BG_PANEL);
 
-	for (int k = 1; k <= winTarget; ++k) {
-		const float boxX = 28.0f + static_cast<float>(k - 1) * 58.0f;
-		const float boxY = 52.0f;
-		const Rectangle boxRect = {boxX, boxY, 50.0f, 30.0f};
+	DrawLineEx(vTopLeft, vBotLeft, 3.0f, palette::BORDER_SUBTLE);
+	DrawLineEx(vBotLeft, vBotRight, 3.0f, palette::BORDER_SUBTLE);
+	DrawLineEx(vBotRight, vTopRight, 3.0f, palette::BORDER_SUBTLE);
 
-		const bool isFilled = (k <= static_cast<int>(collectedCount));
-		DrawRectangleRounded(boxRect, 0.2f, 4, isFilled ? palette::BG_SELECTED : Fade(BLACK, 0.50f));
-		DrawRectangleRoundedLines(boxRect, 0.2f, 4, isFilled ? palette::BORDER_ACTIVE : palette::BORDER_DEFAULT);
+	const float timer = context.state.gameTimer;
+	const bool isOvertime = (timer <= 0.0f);
+	std::string timerStr;
 
-		const std::string numStr = std::to_string(k);
-		const int textWidth = MeasureText(numStr.c_str(), 18);
-		DrawText(numStr.c_str(), static_cast<int>(boxX + 25.0f - textWidth * 0.5f), static_cast<int>(boxY + 6.0f), 18, isFilled ? palette::TEXT_GOLD : palette::TEXT_MUTED);
+	if (isOvertime) {
+		timerStr = "0:00";
+	} else {
+		const int totalSec = static_cast<int>(timer);
+		const int minutes = totalSec / 60;
+		const int seconds = totalSec % 60;
+		timerStr = (minutes < 10 ? "0" : "") + std::to_string(minutes) + ":" +
+		           (seconds < 10 ? "0" : "") + std::to_string(seconds);
 	}
 
-	const bool winMet = (static_cast<int>(collectedCount) >= winTarget);
-	const std::string progressText = "Collected: " + std::to_string(collectedCount) + " / " + std::to_string(winTarget) + "  |  [1-9] Inspect";
-	DrawText(progressText.c_str(), 28, 88, 16, winMet ? palette::TEXT_SUCCESS : palette::TEXT_WHITE);
+	const Color clockColor = context.state.isVictory ? palette::TEXT_SUCCESS : (isOvertime ? palette::TEXT_DIM : palette::TEXT_PRIMARY);
+	const int textWidth = MeasureText(timerStr.c_str(), 36);
+	DrawText(timerStr.c_str(), static_cast<int>(cx - textWidth * 0.5f), 10, 36, clockColor);
 }
 
-void ui::GameHUD::renderTopRightInventory(const GameContext &context) {
+void ui::GameHUD::renderToasts(GameContext &context, float dt) {
+	if (context.state.toasts.empty())
+		return;
+
+	const int screenWidth = GetScreenWidth();
+	const int screenHeight = GetScreenHeight();
+
+	for (auto it = context.state.toasts.begin(); it != context.state.toasts.end(); ) {
+		it->lifetime -= dt;
+		if (it->lifetime <= 0.0f) {
+			it = context.state.toasts.erase(it);
+			continue;
+		}
+
+		const float alpha = std::min(1.0f, it->lifetime / 0.5f);
+		const Color textColor = Fade(it->color, alpha);
+
+		std::vector<std::string> lines;
+		std::stringstream ss(it->text);
+		std::string line;
+		while (std::getline(ss, line, '\n')) {
+			lines.push_back(line);
+		}
+
+		const float lineHeight = static_cast<float>(it->fontSize) + 8.0f;
+		const float totalBlockHeight = static_cast<float>(lines.size()) * lineHeight;
+		float currentY = static_cast<float>(screenHeight) * 0.45f - totalBlockHeight * 0.5f;
+
+		for (const auto &l : lines) {
+			const int textWidth = MeasureText(l.c_str(), it->fontSize);
+			const int drawX = screenWidth / 2 - textWidth / 2;
+
+			DrawText(l.c_str(), drawX + 2, static_cast<int>(currentY) + 2, it->fontSize, Fade(BLACK, alpha * 0.85f));
+			DrawText(l.c_str(), drawX, static_cast<int>(currentY), it->fontSize, textColor);
+
+			currentY += lineHeight;
+		}
+
+		++it;
+	}
+}
+
+void ui::GameHUD::renderFloatingStatus(const GameContext &context, size_t collectedCount, int winTarget) {
+	(void)context;
+	DrawText("JOM MAIN GULI", 28, 24, 22, palette::TEXT_MUTED);
+
+	const bool winMet = (static_cast<int>(collectedCount) >= winTarget);
+	const std::string countStr = std::to_string(collectedCount) + " / " + std::to_string(winTarget);
+	const int countWidth = MeasureText(countStr.c_str(), 48);
+
+	DrawText(countStr.c_str(), 28, 48, 48, winMet ? palette::TEXT_SUCCESS : palette::TEXT_PRIMARY);
+	DrawText("Guli Collected", 28 + countWidth + 16, 64, 24, palette::TEXT_MUTED);
+
+	DrawText("[H] Help & Recipes", 28, GetScreenHeight() - 38, 24, palette::TEXT_MUTED);
+}
+
+void ui::GameHUD::renderInventorySidebar(const GameContext &context) {
 	if (!context.registry.valid(context.currentPlayer))
 		return;
 
@@ -54,7 +122,7 @@ void ui::GameHUD::renderTopRightInventory(const GameContext &context) {
 	const int screenWidth = GetScreenWidth();
 
 	const float socketSize = getSlotSize();
-	const float socketX = static_cast<float>(screenWidth) - 65.0f;
+	const float socketX = static_cast<float>(screenWidth) - socketSize - 20.0f;
 
 	for (size_t i = 0; i < inventory->guliCollection.size(); ++i) {
 		const entt::entity guli = inventory->guliCollection[i];
@@ -67,15 +135,16 @@ void ui::GameHUD::renderTopRightInventory(const GameContext &context) {
 		const float socketY = 20.0f + static_cast<float>(i) * getSlotSpacing();
 		const Rectangle socketRect = {socketX, socketY, socketSize, socketSize};
 
-		// const Color bgColor = isSelected ? palette::BG_SELECTED : palette::BG_PANEL;
-		const Color borderColor = isSelected ? palette::BORDER_ACTIVE : (isSpecial ? palette::BORDER_ACTIVE : palette::BORDER_DEFAULT);
+		const Color borderColor = isSelected ? palette::BORDER_ACTIVE : (isSpecial ? palette::BORDER_HERITAGE : palette::BORDER_SUBTLE);
+		DrawRectangleRoundedLines(socketRect, 0.22f, 4, borderColor);
 
-		// DrawRectangleRounded(socketRect, 0.25f, 4, bgColor);
-		DrawRectangleRoundedLines(socketRect, 0.25f, 4, borderColor);
+		const std::string badgeText = std::to_string(i + 1);
+		DrawText(badgeText.c_str(), static_cast<int>(socketX + 11.0f), static_cast<int>(socketY + 9.0f), 28, Color{0, 0, 0, 220});
+		DrawText(badgeText.c_str(), static_cast<int>(socketX + 10.0f), static_cast<int>(socketY + 8.0f), 28, isSelected ? palette::TEXT_ACCENT : (isSpecial ? palette::TEXT_GOLD : palette::TEXT_PRIMARY));
 	}
 }
 
-void ui::GameHUD::renderInspectionBanner(const GameContext &context) {
+void ui::GameHUD::renderInspectionView(const GameContext &context) {
 	if (!context.registry.valid(context.currentPlayer))
 		return;
 
@@ -92,42 +161,31 @@ void ui::GameHUD::renderInspectionBanner(const GameContext &context) {
 	const int screenWidth = GetScreenWidth();
 	const int screenHeight = GetScreenHeight();
 
-	const float bannerY = static_cast<float>(screenHeight) * 0.42f + 115.0f;
-	const Rectangle bannerRect = {static_cast<float>(screenWidth) * 0.5f - 240.0f, bannerY, 480.0f, 75.0f};
-
-	DrawRectangleRounded(bannerRect, 0.18f, 4, Fade(BLACK, 0.85f));
-	DrawRectangleRoundedLines(bannerRect, 0.18f, 4, isSpecial ? palette::BORDER_ACTIVE : palette::BORDER_DEFAULT);
-
 	const std::string header = (isSpecial ? "* " : "") + name;
-	const int headerWidth = MeasureText(header.c_str(), 22);
-	DrawText(header.c_str(), screenWidth / 2 - headerWidth / 2, static_cast<int>(bannerY + 12.0f), 22, isSpecial ? palette::TEXT_GOLD : palette::TEXT_WHITE);
+	const int headerWidth = MeasureText(header.c_str(), 32);
+	const float cardWidth = std::max(360.0f, static_cast<float>(headerWidth) + 60.0f);
+	const float cardHeight = 60.0f;
+	const float cardY = static_cast<float>(screenHeight) * 0.72f;
+	const Rectangle cardRect = {static_cast<float>(screenWidth) * 0.5f - cardWidth * 0.5f, cardY, cardWidth, cardHeight};
 
-	const std::string fullControls = "Hold LMB & Drag to Rotate";
-	const int ctrlWidth = MeasureText(fullControls.c_str(), 15);
-	DrawText(fullControls.c_str(), screenWidth / 2 - ctrlWidth / 2, static_cast<int>(bannerY + 44.0f), 15, palette::TEXT_MUTED);
+	DrawRectangleRounded(cardRect, 0.2f, 4, palette::BG_PANEL);
+	DrawRectangleRoundedLines(cardRect, 0.2f, 4, isSpecial ? palette::BORDER_HERITAGE : palette::BORDER_SUBTLE);
+
+	DrawText(header.c_str(), screenWidth / 2 - headerWidth / 2, static_cast<int>(cardY + 14.0f), 32, isSpecial ? palette::TEXT_GOLD : palette::TEXT_PRIMARY);
+
+	const char *navText = "[LMB + Drag] Rotate View   |   [ESC / RMB] Back";
+	const int navTextWidth = MeasureText(navText, 24);
+	DrawText(navText, screenWidth / 2 - navTextWidth / 2 + 1, screenHeight - 47, 24, Color{0, 0, 0, 200});
+	DrawText(navText, screenWidth / 2 - navTextWidth / 2, screenHeight - 48, 24, palette::TEXT_MUTED);
 }
 
-void ui::GameHUD::renderVictoryBanner(size_t collectedCount, int winTarget) {
-	if (winTarget <= 0 || static_cast<int>(collectedCount) < winTarget)
-		return;
-
-	const int screenWidth = GetScreenWidth();
-	const Rectangle winRect = {static_cast<float>(screenWidth) * 0.5f - 320.0f, 15.0f, 640.0f, 85.0f};
-
-	DrawRectangleRounded(winRect, 0.18f, 4, palette::BG_PANEL);
-	DrawRectangleRoundedLines(winRect, 0.18f, 4, palette::BORDER_ACTIVE);
-
-	const char *winTitle = "VICTORY! GAME COMPLETE!";
-	const int titleWidth = MeasureText(winTitle, 24);
-	DrawText(winTitle, screenWidth / 2 - titleWidth / 2, 24, 24, palette::TEXT_GOLD);
-
-	const std::string subTitle = "All Required Gulies Collected (" + std::to_string(collectedCount) + " / " + std::to_string(winTarget) + ")  |  [R] Replay";
-	const int subWidth = MeasureText(subTitle.c_str(), 16);
-	DrawText(subTitle.c_str(), screenWidth / 2 - subWidth / 2, 54, 16, palette::TEXT_WHITE);
+void ui::GameHUD::renderHelpModal(int screenWidth, int screenHeight) {
+	static HelpMenu sharedHelpMenu;
+	sharedHelpMenu.render(screenWidth, screenHeight);
 }
 
-void ui::GameHUD::render(const GameContext &context, int totalGuliInMap) {
-	const int winTarget = std::min(5, std::max(1, totalGuliInMap));
+void ui::GameHUD::render(GameContext &context, float dt) {
+	const int winTarget = std::min(5, std::max(1, context.state.totalGuliInMap));
 
 	size_t collectedCount = 0;
 	if (context.registry.valid(context.currentPlayer)) {
@@ -136,8 +194,17 @@ void ui::GameHUD::render(const GameContext &context, int totalGuliInMap) {
 		}
 	}
 
-	renderTopLeftHUD(collectedCount, winTarget);
-	renderTopRightInventory(context);
-	renderInspectionBanner(context);
-	renderVictoryBanner(collectedCount, winTarget);
+	renderTrapezoidClock(context);
+	renderToasts(context, dt);
+	renderFloatingStatus(context, collectedCount, winTarget);
+	renderInventorySidebar(context);
+	renderInspectionView(context);
+
+	if (context.state.showHelpOverlay) {
+		m_helpMenu.render(GetScreenWidth(), GetScreenHeight());
+	}
 }
+
+
+
+

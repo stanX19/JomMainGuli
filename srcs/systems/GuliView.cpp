@@ -46,7 +46,7 @@ namespace {
 
 		const int screenWidth = GetScreenWidth();
 		const int screenHeight = GetScreenHeight();
-		const Vector2 centerPos = {static_cast<float>(screenWidth) * 0.5f, static_cast<float>(screenHeight) * 0.42f};
+		const Vector2 centerPos = {static_cast<float>(screenWidth) * 0.5f, static_cast<float>(screenHeight) * 0.40f};
 
 
 		constexpr float DIST = 2.5f;

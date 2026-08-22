@@ -25,7 +25,8 @@ void Game::reset() {
 	const auto guliCount = std::count_if(initEntities.begin(), initEntities.end(), [](const auto &e) {
 		return e.type == map::EntityType::Guli;
 	});
-	m_totalGuliInMap = (guliCount > 0) ? static_cast<int>(guliCount) : 5;
+	const int totalGuli = (guliCount > 0) ? static_cast<int>(guliCount) : 5;
+	m_context.state = GameState(totalGuli);
 }
 
 EngineState Game::run() {
@@ -36,6 +37,7 @@ EngineState Game::run() {
 		const float dt = GetFrameTime();
 		m_context.soundManager.updateMusic();
 
+		m_gameStateSystem.update(m_context, dt);
 		m_playerMoveControl.update(m_context, dt);
 		m_playerMagicCast.update(m_context, dt);
 		m_particleAttraction.update(m_context, dt);
@@ -55,7 +57,7 @@ EngineState Game::run() {
 
 		BeginDrawing();
 		m_renderer.render(dt);
-		m_hud.render(m_context, m_totalGuliInMap);
+		m_hud.render(m_context, dt);
 		EndDrawing();
 
 		inputControls(dt, nextState);
@@ -66,7 +68,17 @@ EngineState Game::run() {
 }
 
 void Game::inputControls([[maybe_unused]] float dt, EngineState &nextState) {
+	if (IsKeyPressed(KEY_H)) {
+		m_context.state.showHelpOverlay = !m_context.state.showHelpOverlay;
+		return;
+	}
+
 	if (IsKeyPressed(KEY_ESCAPE)) {
+		if (m_context.state.showHelpOverlay) {
+			m_context.state.showHelpOverlay = false;
+			return;
+		}
+
 		if (m_context.registry.valid(m_context.currentPlayer) && m_context.registry.all_of<component::GuliViewState>(m_context.currentPlayer)) {
 			m_context.registry.remove<component::GuliViewState>(m_context.currentPlayer);
 			return;
@@ -74,6 +86,7 @@ void Game::inputControls([[maybe_unused]] float dt, EngineState &nextState) {
 		nextState = EngineState::MENU;
 		return;
 	}
+
 	if (IsKeyPressed(KEY_R)) {
 		reset();
 	}

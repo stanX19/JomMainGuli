@@ -2,12 +2,14 @@
 
 #include "includes.hpp"
 #include "GameConfig.hpp"
+#include "GameState.hpp"
 #include "ModelManager.hpp"
 #include "SoundManager.hpp"
 #include "map/Map.hpp"
 
 struct GameContext {
 	GameConfig config;
+	GameState state;
 	ModelManager modelManager;
 	SoundManager soundManager;
 	map::Map map;

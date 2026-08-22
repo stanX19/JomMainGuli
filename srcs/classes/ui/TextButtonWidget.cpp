@@ -25,18 +25,17 @@ bool TextButtonWidget::update() {
 }
 
 void TextButtonWidget::draw() {
-	const Color drawColor = ColorAlpha(m_color, 0.4f + (m_hovered + (m_hovered && m_down)) * 0.2f);
-
-	DrawRectangleRec(m_bounds, drawColor);
-	DrawRectangleLinesEx(m_bounds, 2, m_color);
+	const Color bgColor = m_hovered ? ColorAlpha(m_color, 0.35f) : ColorAlpha(m_color, 0.18f);
+	DrawRectangleRounded(m_bounds, 0.22f, 4, bgColor);
+	DrawRectangleRoundedLines(m_bounds, 0.22f, 4, m_hovered ? Color{56, 189, 248, 255} : m_color);
 
 	const int textWidth = MeasureText(m_text.c_str(), m_fontSize);
 	DrawText(
 		m_text.c_str(),
-		m_bounds.x + m_bounds.width / 2 - textWidth / 2,
-		m_bounds.y + m_bounds.height / 2 - m_fontSize / 2,
+		static_cast<int>(m_bounds.x + m_bounds.width * 0.5f - textWidth * 0.5f),
+		static_cast<int>(m_bounds.y + m_bounds.height * 0.5f - m_fontSize * 0.5f),
 		m_fontSize,
-		m_color
+		m_hovered ? Color{248, 250, 252, 255} : m_color
 	);
 }
 

@@ -103,8 +103,23 @@ namespace {
 	void finalizeGroupMerge(GameContext &context, const MergeGroup &group) {
 		const std::vector<Color> groupColors = collectGroupColors(context.registry, group.entities);
 		const Vector3 spawnPos = Vector3Add(group.targetPos, Vector3{0.0f, 1.2f, 0.0f});
-		entity::spawnCollectibleGuli(context, spawnPos, groupColors, 1.0f);
+		const entt::entity spawned = entity::spawnCollectibleGuli(context, spawnPos, groupColors, 1.0f);
 		
+		if (context.registry.valid(spawned)) {
+			const auto *desc = context.registry.try_get<Description>(spawned);
+			const std::string guliName = desc ? desc->value : "Crafted Guli";
+			const bool isSpecial = context.registry.all_of<tags::IsSpecialGuli>(spawned);
+			const Color toastColor = isSpecial ? Color{251, 191, 36, 255} : Color{248, 250, 252, 255};
+
+			context.state.addToast(
+				guliName,
+				toastColor,
+				3.5f,
+				isSpecial ? 38 : 32,
+				isSpecial ? ToastPriority::HIGH : ToastPriority::NORMAL
+			);
+		}
+
 		const sound::Id mergeSound = context.soundManager.getGuliMergeSound();
 		if (mergeSound != sound::NONE) {
 			context.dispatcher.trigger<event::SoundEvent>(event::SoundEvent{
