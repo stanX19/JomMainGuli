@@ -130,14 +130,26 @@ void Renderer::drawMap()
 	DrawModel(model, Vector3{0.0f, 0.0f, 0.0f}, 1.0f, WHITE);
 
 	const float holeRadius = m_context.map.getHoleRadius();
-	for (const auto &hole : m_context.map.getHoleCords()) {
-		const Vector3 holeCenter = m_context.map.gridToWorld(hole);
-		DrawCircle3D(holeCenter + Vector3{0.0f, 0.1f, 0.0f}, holeRadius, Vector3{1.0f, 0.0f, 0.0f}, 90.0f, SKYBLUE);
-		DrawCircle3D(holeCenter + Vector3{0.0f, 0.1f, 0.0f}, holeRadius + 0.1, Vector3{1.0f, 0.0f, 0.0f}, 90.0f, SKYBLUE);
-		DrawCircle3D(holeCenter + Vector3{0.0f, 0.1f, 0.0f}, holeRadius + 0.2, Vector3{1.0f, 0.0f, 0.0f}, 90.0f, SKYBLUE);
-		DrawCircle3D(holeCenter + Vector3{0.0f, 50.0f, 0.0f}, holeRadius, Vector3{1.0f, 0.0f, 0.0f}, 90.0f, SKYBLUE);
-		DrawCircle3D(holeCenter + Vector3{0.0f, 100.0f, 0.0f}, holeRadius, Vector3{1.0f, 0.0f, 0.0f}, 90.0f, SKYBLUE);
-		DrawCircle3D(holeCenter + Vector3{0.0f, 150.3f, 0.0f}, holeRadius, Vector3{1.0f, 0.0f, 0.0f}, 90.0f, SKYBLUE);
+	const float tileUnitHeight = m_context.config.map.tileUnitHeight;
+	const float numberAbove = 3.0f;
+	const float numberBelow = 1.0f;
+	const ModelId holeModelId = m_context.modelManager.createHoleCylinder(
+		holeRadius,
+		tileUnitHeight * (numberAbove + numberBelow),
+		8,
+		32,
+		std::min(1.0f, 0.1f * (numberAbove + numberBelow))
+	);
+	if (m_context.modelManager.isValid(holeModelId)) {
+		Model &holeModel = m_context.modelManager.getModel(holeModelId);
+		// not set = using default shader not glass or sunlight
+		rlDisableDepthMask();
+		for (const auto &hole : m_context.map.getHoleCords()) {
+			const Vector3 holeCenter = m_context.map.gridToWorld(hole);
+			const Vector3 holePos = holeCenter - Vector3{0.0f, numberBelow * tileUnitHeight, 0.0f};
+			DrawModel(holeModel, holePos, 1.0f, SKYBLUE);
+		}
+		rlEnableDepthMask();
 	}
 }
 

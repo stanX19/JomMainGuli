@@ -52,6 +52,7 @@ public:
 	ModelId createPlane(float width = 2.0f, float length = 2.0f, int resX = 4, int resZ = 4);
 	ModelId loadModelFromImage(const std::string &imagePath, float quadSize = 1.3f);
 	ModelId createRibbon(const std::vector<Color> &colors, float height = 1.6f, float width = 0.7f, float twistTurns = 0.8f);
+	ModelId createHoleCylinder(float radius = 1.0f, float height = 150.0f, int steps = 8, int facesPerCircle = 32, float startOpacity = 0.3f);
 
 	Model &getModel(ModelId id);
 	const Model &getModel(ModelId id) const;

@@ -86,10 +86,10 @@ int map::MapLoader::calculateMinNeighborHeight(
 	int minH = 1000;
 	bool found = false;
 
-	const int dx[] = {-1, 1, 0, 0, -1, -1, 1, 1};
-	const int dy[] = {0, 0, -1, 1, -1, 1, -1, 1};
+	const int dx[] = {-1, 1, 0, 0};  //, -1, -1, 1, 1};
+	const int dy[] = {0, 0, -1, 1};  //, -1, 1, -1, 1};
 
-	for (int i = 0; i < 8; ++i) {
+	for (int i = 0; i < 4; ++i) {
 		const int nx = x + dx[i];
 		const int ny = y + dy[i];
 		if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
