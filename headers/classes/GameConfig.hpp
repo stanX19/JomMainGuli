@@ -87,6 +87,11 @@ public:
 		float masterVolume = 0.5f;
 		float musicVolume = 0.6f;
 		std::string bgmPath = "assets/sounds/island_0.ogg";
+		std::string glassClinkDir = "assets/sounds/glass_clink";
+		std::string shootSoundPath = "assets/sounds/mixkit-throw-hard-wind-woosh-1488.wav";
+		std::string guliMergeSoundPath = "assets/sounds/mixkit-bonus-earned-in-video-game-2058.wav";
+		std::string collectGuliSoundPath = "assets/sounds/mixkit-achievement-bell-600.wav";
+		std::string victorySoundPath = "assets/sounds/mixkit-animated-small-group-applause-523.wav";
 	} audio;
 
 	struct Settings {

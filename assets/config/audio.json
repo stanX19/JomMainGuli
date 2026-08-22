@@ -1,5 +1,10 @@
 {
   "masterVolume": 0.5,
   "musicVolume": 0.6,
-  "bgmPath": "assets/sounds/island_0.ogg"
+  "bgmPath": "assets/sounds/island_0.ogg",
+  "glassClinkDir": "assets/sounds/glass_clink",
+  "shootSoundPath": "assets/sounds/mixkit-throw-hard-wind-woosh-1488.wav",
+  "guliMergeSoundPath": "assets/sounds/mixkit-bonus-earned-in-video-game-2058.wav",
+  "collectGuliSoundPath": "assets/sounds/mixkit-achievement-bell-600.wav",
+  "victorySoundPath": "assets/sounds/mixkit-animated-small-group-applause-523.wav"
 }

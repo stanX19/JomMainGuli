@@ -99,6 +99,11 @@ void GameConfig::initConstants() {
 	audio.masterVolume = getFloat("audio.masterVolume", 0.5f);
 	audio.musicVolume = getFloat("audio.musicVolume", 0.6f);
 	audio.bgmPath = getString("audio.bgmPath", "assets/sounds/island_0.ogg");
+	audio.glassClinkDir = getString("audio.glassClinkDir", "assets/sounds/glass_clink");
+	audio.shootSoundPath = getString("audio.shootSoundPath", "assets/sounds/mixkit-throw-hard-wind-woosh-1488.wav");
+	audio.guliMergeSoundPath = getString("audio.guliMergeSoundPath", "assets/sounds/mixkit-bonus-earned-in-video-game-2058.wav");
+	audio.collectGuliSoundPath = getString("audio.collectGuliSoundPath", "assets/sounds/mixkit-achievement-bell-600.wav");
+	audio.victorySoundPath = getString("audio.victorySoundPath", getString("audio.winSoundPath", "assets/sounds/mixkit-animated-small-group-applause-523.wav"));
 
 	settings.masterVolume = audio.masterVolume;
 	settings.controlSensitivity = Clamp(

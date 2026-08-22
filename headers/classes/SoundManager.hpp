@@ -33,8 +33,14 @@ public:
 	void playImmediate(sound::Id id, float volume = 1.0f);
 
 	sound::Id loadSound(const std::string& path);
-	void loadGlassSounds(const std::string& dir = "assets/sounds");
+	void loadGlassSounds(const std::string& dir = "assets/sounds/glass_clink");
 	sound::Id getRandomGlassSound() const;
+
+	sound::Id getShootSound() const;
+	sound::Id getGuliMergeSound() const;
+	sound::Id getCollectGuliSound() const;
+	sound::Id getVictorySound() const;
+	sound::Id getWinSound() const;
 
 	// Background music
 	void playMusic();
@@ -52,6 +58,11 @@ private:
 	std::map<std::string, sound::Id> m_pathCache;
 	std::vector<sound::Id> m_glassSounds;
 	std::vector<sound::PlaySoundRequest> m_pendingRequests;
+
+	sound::Id m_shootSoundId = sound::NONE;
+	sound::Id m_guliMergeSoundId = sound::NONE;
+	sound::Id m_collectGuliSoundId = sound::NONE;
+	sound::Id m_victorySoundId = sound::NONE;
 
 	Music m_bgmStream{};
 	bool m_bgmLoaded = false;

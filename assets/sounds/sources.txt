@@ -1,3 +1,5 @@
 glass collision: https://pixabay.com/sound-effects/household-shot-glass-clink-toast-26861/
-Source file: freesound_community-shot-glass-clink-toast-26861.mp3
-Extracted clips (24 files): glass_clink_01.wav to glass_clink_24.wav (split via scratch/split_sound.py using spectral flux onset & tail decay detection)
+
+mixkit sfx: https://mixkit.co/free-sound-effects/
+
+bgm island 0: https://opengameart.org/content/feel-good-island

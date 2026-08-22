@@ -14,15 +14,15 @@ namespace {
 		if (velAlongNormal >= -5.0f || !context.registry.all_of<tags::GlassCollisionSound>(entity))
 			return;
 
-		const sound::Id sndId = context.soundManager.getRandomGlassSound();
-		if (sndId == sound::NONE)
+		const sound::Id soundId = context.soundManager.getRandomGlassSound();
+		if (soundId == sound::NONE)
 			return;
 
 		const float impactSpeed = -velAlongNormal;
 		const float volume = std::clamp(impactSpeed / 60.0f, 0.1f, 0.8f);
 		context.dispatcher.trigger<event::SoundEvent>(event::SoundEvent{
 			&context,
-			sndId,
+			soundId,
 			position,
 			volume
 		});

@@ -15,7 +15,12 @@ void SoundManager::init(const GameConfig& config) {
 	}
 	m_masterVolume = config.audio.masterVolume;
 	SetMasterVolume(m_masterVolume);
-	loadGlassSounds("assets/sounds");
+	loadGlassSounds(config.audio.glassClinkDir);
+	m_shootSoundId = loadSound(config.audio.shootSoundPath);
+	m_guliMergeSoundId = loadSound(config.audio.guliMergeSoundPath);
+	m_collectGuliSoundId = loadSound(config.audio.collectGuliSoundPath);
+	m_victorySoundId = loadSound(config.audio.victorySoundPath);
+
 	m_bgmStream = LoadMusicStream(config.audio.bgmPath.c_str());
 	m_bgmLoaded = (m_bgmStream.frameCount > 0);
 	m_initialized = true;
@@ -36,6 +41,10 @@ void SoundManager::shutdown() {
 	m_sounds.clear();
 	m_pathCache.clear();
 	m_glassSounds.clear();
+	m_shootSoundId = sound::NONE;
+	m_guliMergeSoundId = sound::NONE;
+	m_collectGuliSoundId = sound::NONE;
+	m_victorySoundId = sound::NONE;
 
 	if (IsAudioDeviceReady()) {
 		CloseAudioDevice();
@@ -53,13 +62,13 @@ sound::Id SoundManager::loadSound(const std::string& path) {
 		return sound::NONE;
 	}
 
-	const Sound snd = LoadSound(path.c_str());
-	if (snd.frameCount == 0) {
+	const Sound loadedSound = LoadSound(path.c_str());
+	if (loadedSound.frameCount == 0) {
 		return sound::NONE;
 	}
 
 	const sound::Id id = m_nextSoundId++;
-	m_sounds[id] = snd;
+	m_sounds[id] = loadedSound;
 	m_pathCache[path] = id;
 	return id;
 }
@@ -83,6 +92,26 @@ sound::Id SoundManager::getRandomGlassSound() const {
 	}
 	const int index = GetRandomValue(0, static_cast<int>(m_glassSounds.size()) - 1);
 	return m_glassSounds[index];
+}
+
+sound::Id SoundManager::getShootSound() const {
+	return m_shootSoundId;
+}
+
+sound::Id SoundManager::getGuliMergeSound() const {
+	return m_guliMergeSoundId;
+}
+
+sound::Id SoundManager::getCollectGuliSound() const {
+	return m_collectGuliSoundId;
+}
+
+sound::Id SoundManager::getVictorySound() const {
+	return m_victorySoundId;
+}
+
+sound::Id SoundManager::getWinSound() const {
+	return m_victorySoundId;
 }
 
 void SoundManager::unloadSound(sound::Id id) {

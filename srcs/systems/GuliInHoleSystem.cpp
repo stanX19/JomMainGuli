@@ -1,6 +1,7 @@
 #include "systems/GuliInHoleSystem.hpp"
 #include "components.hpp"
 #include "entities.hpp"
+#include "events.hpp"
 #include "constants.hpp"
 #include "utils.hpp"
 #include <unordered_map>
@@ -104,6 +105,16 @@ namespace {
 		const Vector3 spawnPos = Vector3Add(group.targetPos, Vector3{0.0f, 1.2f, 0.0f});
 		entity::spawnCollectibleGuli(context, spawnPos, groupColors, 1.0f);
 		
+		const sound::Id mergeSound = context.soundManager.getGuliMergeSound();
+		if (mergeSound != sound::NONE) {
+			context.dispatcher.trigger<event::SoundEvent>(event::SoundEvent{
+				&context,
+				mergeSound,
+				spawnPos,
+				1.0f
+			});
+		}
+
 		for (entt::entity member : group.entities) {
 			context.registry.destroy(member);
 		}

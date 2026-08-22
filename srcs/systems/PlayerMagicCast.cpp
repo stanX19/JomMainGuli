@@ -2,6 +2,7 @@
 #include "components.hpp"
 #include "constants.hpp"
 #include "entities.hpp"
+#include "events.hpp"
 #include "map/MapCollider.hpp"
 #include "utils.hpp"
 #include <algorithm>
@@ -134,5 +135,9 @@ void systems::PlayerMagicCast::update(GameContext &context, float dt) {
 		return;
 
 	launchGravitonAndParticles(context, castState->graviton, ray);
+
+	const sound::Id shootSound = context.soundManager.getShootSound();
+	context.soundManager.playImmediate(shootSound);
+
 	context.registry.remove<MagicCastState>(context.currentPlayer);
 }
