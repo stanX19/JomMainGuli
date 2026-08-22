@@ -83,6 +83,12 @@ public:
 		int smoothingHeightDiff = 2;
 	} map;
 
+	struct Audio {
+		float masterVolume = 0.5f;
+		float musicVolume = 0.6f;
+		std::string bgmPath = "assets/sounds/island_0.ogg";
+	} audio;
+
 	struct Settings {
 		float masterVolume = 0.5f;
 		float controlSensitivity = 1.0f;

@@ -96,7 +96,11 @@ void GameConfig::initConstants() {
 	map.holeRadiusRatio = getFloat("map.holeRadiusRatio", 0.6f);
 	map.smoothingHeightDiff = getInt("map.smoothingHeightDiff", 2);
 
-	settings.masterVolume = getFloat("audio.masterVolume", 0.5f);
+	audio.masterVolume = getFloat("audio.masterVolume", 0.5f);
+	audio.musicVolume = getFloat("audio.musicVolume", 0.6f);
+	audio.bgmPath = getString("audio.bgmPath", "assets/sounds/island_0.ogg");
+
+	settings.masterVolume = audio.masterVolume;
 	settings.controlSensitivity = Clamp(
 		getFloat("settings.controlSensitivity", 1.0f), 0.01f, 1.0f
 	);

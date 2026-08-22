@@ -21,10 +21,12 @@ EngineState GameMenu::run()
 	m_context.mainCamera.projection = CAMERA_PERSPECTIVE;
 
 	EngineState nextState = EngineState::MENU;
+	m_context.soundManager.playMusic();
 
 	while (!WindowShouldClose() && nextState == EngineState::MENU)
 	{
 		const float dt = GetFrameTime();
+		m_context.soundManager.updateMusic();
 
 		BeginDrawing();
 		ClearBackground(BLACK);

@@ -1,3 +1,5 @@
 {
-  "masterVolume": 0.5
+  "masterVolume": 0.5,
+  "musicVolume": 0.6,
+  "bgmPath": "assets/sounds/island_0.ogg"
 }

@@ -13,9 +13,11 @@ void SoundManager::init(const GameConfig& config) {
 	if (!IsAudioDeviceReady()) {
 		InitAudioDevice();
 	}
-	m_masterVolume = config.settings.masterVolume;
+	m_masterVolume = config.audio.masterVolume;
 	SetMasterVolume(m_masterVolume);
 	loadGlassSounds("assets/sounds");
+	m_bgmStream = LoadMusicStream(config.audio.bgmPath.c_str());
+	m_bgmLoaded = (m_bgmStream.frameCount > 0);
 	m_initialized = true;
 }
 
@@ -131,7 +133,7 @@ void SoundManager::update([[maybe_unused]] const Camera3D& camera) {
 }
 
 void SoundManager::playMusic() {
-	if (m_bgmLoaded) {
+	if (m_bgmLoaded && !IsMusicStreamPlaying(m_bgmStream)) {
 		PlayMusicStream(m_bgmStream);
 	}
 }
