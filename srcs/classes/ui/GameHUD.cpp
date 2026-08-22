@@ -102,10 +102,10 @@ void ui::GameHUD::renderFloatingStatus(const GameContext &context, size_t collec
 
 	const bool winMet = (static_cast<int>(collectedCount) >= winTarget);
 	const std::string countStr = std::to_string(collectedCount) + " / " + std::to_string(winTarget);
-	const int countWidth = MeasureText(countStr.c_str(), 48);
+	const int countWidth = MeasureText(countStr.c_str(), 36);
 
-	DrawText(countStr.c_str(), 28, 48, 48, winMet ? palette::TEXT_SUCCESS : palette::TEXT_PRIMARY);
-	DrawText("Guli Collected", 28 + countWidth + 16, 64, 24, palette::TEXT_MUTED);
+	DrawText(countStr.c_str(), 28, 48, 36, winMet ? palette::TEXT_SUCCESS : palette::TEXT_PRIMARY);
+	DrawText("Guli Collected", 28 + countWidth + 16, 58, 24, palette::TEXT_MUTED);
 
 	DrawText("[H] Help & Recipes", 28, GetScreenHeight() - 38, 24, palette::TEXT_MUTED);
 }
