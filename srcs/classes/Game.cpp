@@ -17,7 +17,7 @@ void Game::reset() {
 	m_context.registry.clear();
 	event::utils::hookAllListeners(m_context);
 
-	m_context.map = map::MapLoader::load(m_context.config, "assets/maps/level3.map");
+	m_context.map = map::MapLoader::load(m_context.config, "assets/maps/level2.map");
 	map::MapMeshGenerator(m_context.map).generateAndAssignModel(m_context.modelManager);
 	m_context.map.spawnAll(m_context);
 
