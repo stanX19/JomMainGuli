@@ -70,7 +70,7 @@ std::optional<map::EntityType> map::MapLoader::parseEntityChar(char c) {
 
 int map::MapLoader::parseExplicitHeight(char c) {
 	if (c == '#')
-		return 11;
+		return 20;
 	if (c == '0')
 		return -1;
 	if (c >= '1' && c <= '9')

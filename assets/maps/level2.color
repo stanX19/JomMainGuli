@@ -1,17 +1,17 @@
 ##############################
-###RRR       G   G      YYY###
-##RRRR Y  Y   G G       YYYY##
-##RRR  Y  Y    W         YYY##
-##RR  Y    Y   W          YY##
-##RR Y   YY    W          YY##
-##RR Y G     G W G    BB  YY##
-##RR         WGWGW        YY##
-## G      W   WGW           ##
-##  GGGG  W    W  RRRR      ##
-## GGGGGG        RRRRRR     ##
-## GGRRGG  W  GG RRRYRR     ##
-##  GGGG    G     RRRR   R  ##
-##   GG             Y     Y ##
+#RRRRRRRRRR  G   G      YYY###
+#RRRRRRRRR    G G       YYYY##
+#RR  RRR       W         YYY##
+#RR   RR       W          YY##
+#RRR           W          YY##
+#RRRR YYYW   G W G    BB  YY##
+#RRRR YY     WGWGW        YY##
+#R    Y Y     WGW           ##
+#R    W  Y     W  RRRR      ##
+#R GG     Y      RRRRRR     ##
+## GRG     W  GG RRRYRR     ##
+## GGG      G     RRRR   R  ##
+##   G              Y     Y ##
 ##       Y          Y       ##
 ##        GG       YY R   Y ##
 ##                 YY Y  R  ##

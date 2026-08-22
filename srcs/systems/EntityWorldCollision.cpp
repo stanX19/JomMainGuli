@@ -65,10 +65,10 @@ void systems::EntityWorldCollision::update(GameContext &context, float dt) {
 		if (velAlongNormal >= 0.0f)
 			continue;
 		
-		const float e = (velAlongNormal > -2.0f) ? 0.0f : elasticity;
+		const float e = (velAlongNormal > -20.0f) ? 0.0f : elasticity;
 		const Vector3 normalVel = *normal * velAlongNormal;
 		const Vector3 tangentVel = vel.value - normalVel;
-		vel.value = normalVel * -e + tangentVel * 0.95f;
+		vel.value = normalVel * -e + tangentVel * 0.99f;
 		applyRollingRotation(context, entity, *normal, tangentVel, body.radius, dt);
 
 		spawnCollisionSoundIfEligible(context, entity, pos.value, velAlongNormal);
