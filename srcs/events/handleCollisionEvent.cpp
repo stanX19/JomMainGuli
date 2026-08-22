@@ -118,11 +118,62 @@ namespace {
 			guli
 		});
 	}
+
+	void checkCheatCollisionToast(const event::CollisionEvent &evt) {
+		if (!evt.context)
+			return;
+		if (evt.context->state.cheatToastCooldown > 0.0f)
+			return;
+
+		const auto &registry = evt.context->registry;
+		if (!registry.valid(evt.context->currentPlayer))
+			return;
+
+		const entt::entity player = evt.context->currentPlayer;
+		const bool isFoul =
+			(evt.a.id == player && registry.valid(evt.b.id) && registry.all_of<tags::GuliTarget>(evt.b.id)) ||
+			(evt.b.id == player && registry.valid(evt.a.id) && registry.all_of<tags::GuliTarget>(evt.a.id));
+
+		if (!isFoul)
+			return;
+
+		static const char *const foulMessages[] = {"CHEAT", "FOUL", "HANDS OFF"};
+		const int idx = GetRandomValue(0, 2);
+
+		evt.context->state.addToast(foulMessages[idx], ORANGE, 1.0f, 36, ToastPriority::LOW);
+		evt.context->state.cheatToastCooldown = 1.0f;
+	}
+
+	void checkStrikeCollisionToast(const event::CollisionEvent &evt) {
+		if (!evt.context)
+			return;
+		if (evt.context->state.canShowStrikeToast <= 0.0f)
+			return;
+
+		const auto &registry = evt.context->registry;
+		const bool isStrike =
+			(registry.valid(evt.a.id) && registry.all_of<ShotGuli>(evt.a.id) &&
+			 registry.valid(evt.b.id) && registry.all_of<tags::GuliTarget>(evt.b.id)) ||
+			(registry.valid(evt.b.id) && registry.all_of<ShotGuli>(evt.b.id) &&
+			 registry.valid(evt.a.id) && registry.all_of<tags::GuliTarget>(evt.a.id));
+
+		if (!isStrike)
+			return;
+
+		static const char *const strikeMessages[] = {"STRIKE", "HIT", "CONTACT", "IMPACT"};
+		const int idx = GetRandomValue(0, 3);
+
+		evt.context->state.addToast(strikeMessages[idx], GOLD, 1.0f, 36, ToastPriority::LOW);
+		evt.context->state.canShowStrikeToast = 0.0f;
+	}
 }
 
 void event::Listener::handleCollisionEvent(const CollisionEvent &evt) {
 	checkCollectGuli(evt);
+	checkCheatCollisionToast(evt);
+	checkStrikeCollisionToast(evt);
 	applyCollisionPhysics(evt);
 	triggerCollisionSound(evt);
 }
+
 

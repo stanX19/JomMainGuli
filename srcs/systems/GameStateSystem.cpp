@@ -10,6 +10,14 @@ void systems::GameStateSystem::update(GameContext &context, float dt) {
 		context.state.gameTimer = std::max(0.0f, context.state.gameTimer - dt);
 	}
 
+	if (context.state.cheatToastCooldown > 0.0f) {
+		context.state.cheatToastCooldown = std::max(0.0f, context.state.cheatToastCooldown - dt);
+	}
+
+	if (context.state.canShowStrikeToast > 0.0f) {
+		context.state.canShowStrikeToast = std::max(0.0f, context.state.canShowStrikeToast - dt);
+	}
+
 	if (context.state.isVictory)
 		return;
 

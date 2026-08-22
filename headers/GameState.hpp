@@ -25,13 +25,17 @@ struct GameState {
 	bool showHelpOverlay = false;
 	int totalGuliInMap = 5;
 	std::vector<ToastMessage> toasts;
+	float cheatToastCooldown = 0.0f;
+	float canShowStrikeToast = 0.0f;
 
 	GameState(int totalGuli = 5, float timer = 180.0f)
 		: gameTimer(timer),
 		  isVictory(false),
 		  showHelpOverlay(false),
 		  totalGuliInMap(totalGuli),
-		  toasts()
+		  toasts(),
+		  cheatToastCooldown(0.0f),
+		  canShowStrikeToast(0.0f)
 	{}
 
 	void addToast(const std::string &text, Color color, float duration = 3.0f, int fontSize = 18, ToastPriority priority = ToastPriority::NORMAL) {

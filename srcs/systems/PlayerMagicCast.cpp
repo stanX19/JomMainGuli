@@ -139,5 +139,7 @@ void systems::PlayerMagicCast::update(GameContext &context, float dt) {
 	const sound::Id shootSound = context.soundManager.getShootSound();
 	context.soundManager.playImmediate(shootSound);
 
+	context.state.canShowStrikeToast = 3.0f;
+
 	context.registry.remove<MagicCastState>(context.currentPlayer);
 }
