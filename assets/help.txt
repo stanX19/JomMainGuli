@@ -1,18 +1,20 @@
-[ CONTROLS ]
+[ CORE CONTROLS ]
   - W, A, S, D       : Move Character
   - SPACE            : Jump
   - Mouse Look       : Aim Camera
   - Hold LMB         : Collect marbles from Terrain
   - Release LMB      : Shoot!
-  - [1 - 9]          : 3D Inspect Collected Guli
+
+[ EXTRA CONTROLS ]
+  - [1 - 9]          : Inspect Collected Guli
   - [R]              : Reset Level
-  - [H] / [ESC]      : Close Help & Recipes / Back
+  - [H] / [ESC]      : Open Help / Back
 
 [ RECIPES ]
   Sink target guli into holes with required colors:
   
-  * 1. Jalur Gemilang  : Red + Blue + Yellow + White
+  * 1. Jalur Gemilang  : Red + Blue + Yellow
   * 2. Bunga Raya      : Red + Yellow
   * 3. Nasi Lemak      : Green + Red
   * 4. Petronas Towers : Blue + Yellow / White
-  * 5. Colorful Guli   : Any Custom Color Combination
+  * 5. Colorful Guli   : 3 or more Color

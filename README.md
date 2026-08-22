@@ -108,7 +108,6 @@ We chose **Raylib 5.0** because it is a lightweight, non-intrusive C library tha
 | **Jump** | `SPACE` |
 | **Look / Aim** | Mouse Movement |
 | **Move mouse only** | `Alt` + Mouse Movement |
-| **Toggle Aim Zoom** | Mouse Scroll Wheel |
 | **Look Behind** | Hold `F` |
 | **Channel Colors** | Hold **Left Mouse Button (LMB)** |
 | **Shoot Particles (*Pangkah*)** | Release **Left Mouse Button (LMB)** |

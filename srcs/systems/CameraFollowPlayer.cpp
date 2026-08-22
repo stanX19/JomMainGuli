@@ -20,15 +20,8 @@ void systems::CameraFollowPlayer::update(GameContext &context, float dt) {
 	Rotation &rot = *rotPtr;
 	Camera3D &camera = context.mainCamera;
 
-	float scroll = GetMouseWheelMove();
-	if (scroll > 0.0f) {
-		unitCamera->isAiming = true;
-	} else if (scroll < 0.0f) {
-		unitCamera->isAiming = false;
-	}
-
 	bool lookback = IsKeyDown(KEY_F);
-	UnitCamera::POV pov = lookback ? unitCamera->lookBackPOV : (unitCamera->isAiming ? unitCamera->aimPOV : unitCamera->mainPOV);
+	UnitCamera::POV pov = lookback ? unitCamera->lookBackPOV : unitCamera->mainPOV;
 
 	float scale = colBodyPtr ? colBodyPtr->radius : 1.0f;
 

@@ -104,7 +104,13 @@ entt::entity entity::spawnCollectibleGuli(GameContext &context, Vector3 pos, con
 		context.registry.emplace<Description>(collectibleGuli, Description{heritageOpt->name});
 	} else {
 		innerModelId = context.modelManager.createRibbon(uniqueColors);
-		context.registry.emplace<Description>(collectibleGuli, Description{"Hard earned Guli"});
+		std::string desc = "Classical Guli";
+		if (uniqueColors.size() >= 4) {
+			desc = "Super Rare Guli";
+		} else if (uniqueColors.size() >= 3) {
+			desc = "Colorful Guli";
+		}
+		context.registry.emplace<Description>(collectibleGuli, Description{desc});
 	}
 
 	context.registry.emplace<RenderBody>(collectibleGuli, RenderBody{innerModelId, WHITE, radius});

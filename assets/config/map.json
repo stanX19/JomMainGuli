@@ -2,5 +2,5 @@
   "tileSize": 20.0,
   "tileUnitHeight": 10.0,
   "holeRadiusRatio": 0.6,
-  "smoothingHeightDiff": 4
+  "smoothingHeightDiff": 100
 }

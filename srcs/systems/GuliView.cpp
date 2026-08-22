@@ -8,6 +8,23 @@
 using namespace component;
 
 namespace {
+	void handleMouseScroll(GameContext &context, GuliInventory &inventory) {
+		const float scroll = GetMouseWheelMove();
+		const size_t total = inventory.guliCollection.size();
+		auto *viewState = context.registry.try_get<GuliViewState>(context.currentPlayer);
+
+		if (scroll == 0.0f || total == 0 || !viewState)
+			return;
+
+		if (scroll < 0.0f) {
+			viewState->selectedIndex = (viewState->selectedIndex + 1) % total;
+		} else if (scroll > 0.0f) {
+			viewState->selectedIndex = (viewState->selectedIndex + total - 1) % total;
+		}
+
+		viewState->targetGuli = inventory.guliCollection[viewState->selectedIndex];
+	}
+
 	void handleInput(GameContext &context, GuliInventory &inventory) {
 		const entt::entity player = context.currentPlayer;
 		auto *viewState = context.registry.try_get<GuliViewState>(player);
@@ -16,6 +33,8 @@ namespace {
 			context.registry.remove<GuliViewState>(player);
 			return;
 		}
+
+		handleMouseScroll(context, inventory);
 
 		for (int key = KEY_ONE; key <= KEY_NINE; ++key) {
 			if (!IsKeyPressed(key))
