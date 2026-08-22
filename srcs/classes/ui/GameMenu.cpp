@@ -86,6 +86,11 @@ void GameMenu::drawMenuUI(EngineState &nextState)
 
 void GameMenu::inputControls([[maybe_unused]] float dt, EngineState &nextState)
 {
+	if (IsKeyPressed(KEY_F11))
+	{
+		ToggleFullscreen();
+	}
+
 	if (IsKeyPressed(KEY_H))
 	{
 		m_showHelp = !m_showHelp;

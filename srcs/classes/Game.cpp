@@ -68,6 +68,10 @@ EngineState Game::run() {
 }
 
 void Game::inputControls([[maybe_unused]] float dt, EngineState &nextState) {
+	if (IsKeyPressed(KEY_F11)) {
+		ToggleFullscreen();
+	}
+
 	if (IsKeyPressed(KEY_H)) {
 		m_context.state.showHelpOverlay = !m_context.state.showHelpOverlay;
 		return;

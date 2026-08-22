@@ -8,6 +8,7 @@
 [ EXTRA CONTROLS ]
   - [1 - 9]          : Inspect Collected Guli
   - [R]              : Reset Level
+  - [F11]            : Toggle Fullscreen
   - [H] / [ESC]      : Open Help / Back
 
 [ RECIPES ]
